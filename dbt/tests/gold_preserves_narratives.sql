@@ -1,5 +1,5 @@
-SELECT 'narrative_count_mismatch' AS failure
-WHERE
-    (SELECT COUNT(*) FROM {{ ref('narrative_search_documents') }})
-    <>
-    (SELECT COUNT(*) FROM {{ ref('complaint_narratives') }})
+-- Data test: return violating rows; zero rows means the assertion passes.
+select 'narrative_count_mismatch' as failure
+where
+    (select count(*) from {{ ref('narrative_search_documents') }})
+    <> (select count(*) from {{ ref('complaint_narratives') }})

@@ -39,6 +39,7 @@ flowchart TD
 ```
 
 ## Documentation
+- [Coding and contribution conventions](CONTRIBUTING.md)
 - [Step-by-step walkthrough and rationale](docs/project-walkthrough.md)
 - [Data sources and selection](docs/data-sources.md)
 - [High-Level System Design](docs/HLSD.md)

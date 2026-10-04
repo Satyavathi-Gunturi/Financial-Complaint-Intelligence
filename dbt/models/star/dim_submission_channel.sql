@@ -1,4 +1,5 @@
+-- Grain: one submission method. Connect directly to the star fact.
 {{ config(materialized='table', schema='star') }}
 
-SELECT submission_channel_id, submission_channel
-FROM {{ ref('submission_channels') }}
+select submission_channel_id, submission_channel
+from {{ ref('submission_channels') }}

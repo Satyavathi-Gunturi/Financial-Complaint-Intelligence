@@ -1,8 +1,20 @@
+-- Grain: one outcome/public-response/timeliness combination. This is a snapshot
+-- category, not response history.
 {{ config(materialized='table', schema='star') }}
 
-SELECT DISTINCT
-    md5(CAST(to_json(list_value(company_response, company_public_response, CAST(timely_response AS VARCHAR))) AS VARCHAR)) AS response_id,
+select distinct
+    md5(
+        cast(
+            to_json(
+                list_value(
+                    company_response,
+                    company_public_response,
+                    cast(timely_response as varchar)
+                )
+            ) as varchar
+        )
+    ) as response_id,
     company_response,
     company_public_response,
     timely_response
-FROM {{ ref('complaint_metrics') }}
+from {{ ref('complaint_metrics') }}

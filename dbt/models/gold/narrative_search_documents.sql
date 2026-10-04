@@ -1,6 +1,8 @@
+-- Grain: one narrative-bearing complaint. Supply evidence context for planned
+-- retrieval; this is not a vector index.
 {{ config(materialized='view') }}
 
-SELECT
+select
     m.complaint_id,
     m.date_received,
     m.company_id,
@@ -14,6 +16,5 @@ SELECT
     m._source_archive,
     m._source_csv,
     n.narrative
-FROM {{ ref('complaint_metrics') }} m
-JOIN {{ ref('complaint_narratives') }} n
-    ON m.complaint_id = n.complaint_id
+from {{ ref('complaint_metrics') }} m
+join {{ ref('complaint_narratives') }} n on m.complaint_id = n.complaint_id

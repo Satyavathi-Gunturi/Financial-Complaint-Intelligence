@@ -6,42 +6,61 @@ models:
     data_tests:
     - not_null
     - unique
+    description: Stable key for the original source company label.
+  description: 'Grain: one source company label. Connect directly to the star fact.'
 - name: dim_product
   columns:
   - name: product_category_id
     data_tests:
     - not_null
     - unique
+    description: Stable key for the product/sub-product combination.
+  description: 'Grain: one product/sub-product combination. Connect directly to the
+    star fact.'
 - name: dim_issue
   columns:
   - name: issue_category_id
     data_tests:
     - not_null
     - unique
+    description: Stable key for product context plus issue/sub-issue.
+  description: 'Grain: one issue combination in product context. Flatten product attributes
+    to avoid dimension-to-dimension joins.'
 - name: dim_submission_channel
   columns:
   - name: submission_channel_id
     data_tests:
     - not_null
     - unique
+    description: Stable key for the submission method.
+  description: 'Grain: one submission method. Connect directly to the star fact.'
 - name: dim_geography
   columns:
   - name: geography_id
     data_tests:
     - not_null
     - unique
+    description: Stable key for reported state/ZIP, including NULL components.
+  description: 'Grain: one reported state/ZIP combination. Preserve masked ZIPs and
+    NULL attributes; no geocoding is inferred.'
 - name: dim_response
   columns:
   - name: response_id
     data_tests:
     - not_null
     - unique
+    description: Stable key for outcome, public response category and timeliness.
+  description: 'Grain: one outcome/public-response/timeliness combination. This is
+    a snapshot category, not response history.'
 - name: dim_date
   columns:
   - name: date_key
     data_tests:
     - not_null
     - unique
+    description: Integer YYYYMMDD calendar key.
+  description: 'Grain: one calendar day. Support received and sent date roles, Monday
+    weeks and paired ISO year/week attributes.'
 - name: fact_complaints
   columns:
   - name: complaint_id
@@ -52,6 +71,8 @@ models:
         arguments:
           to: '{{ ref(''complaint_metrics'') }}'
           field: complaint_id
+    description: Verified source complaint ID. Retained as text and unique at complaint
+      grain.
   - name: company_id
     data_tests:
     - not_null
@@ -59,6 +80,7 @@ models:
         arguments:
           to: '{{ ref(''dim_company'') }}'
           field: company_id
+    description: Stable key for the original source company label.
   - name: product_category_id
     data_tests:
     - not_null
@@ -66,6 +88,7 @@ models:
         arguments:
           to: '{{ ref(''dim_product'') }}'
           field: product_category_id
+    description: Stable key for the product/sub-product combination.
   - name: issue_category_id
     data_tests:
     - not_null
@@ -73,6 +96,7 @@ models:
         arguments:
           to: '{{ ref(''dim_issue'') }}'
           field: issue_category_id
+    description: Stable key for product context plus issue/sub-issue.
   - name: submission_channel_id
     data_tests:
     - not_null
@@ -80,6 +104,7 @@ models:
         arguments:
           to: '{{ ref(''dim_submission_channel'') }}'
           field: submission_channel_id
+    description: Stable key for the submission method.
   - name: geography_id
     data_tests:
     - not_null
@@ -87,6 +112,7 @@ models:
         arguments:
           to: '{{ ref(''dim_geography'') }}'
           field: geography_id
+    description: Stable key for reported state/ZIP, including NULL components.
   - name: response_id
     data_tests:
     - not_null
@@ -94,6 +120,7 @@ models:
         arguments:
           to: '{{ ref(''dim_response'') }}'
           field: response_id
+    description: Stable key for outcome, public response category and timeliness.
   - name: received_date_key
     data_tests:
     - not_null
@@ -101,6 +128,7 @@ models:
         arguments:
           to: '{{ ref(''dim_date'') }}'
           field: date_key
+    description: Calendar key for receipt date; default analytics date role.
   - name: sent_date_key
     data_tests:
     - not_null
@@ -108,57 +136,78 @@ models:
         arguments:
           to: '{{ ref(''dim_date'') }}'
           field: date_key
+    description: Calendar key for referral to company; not a resolution date.
   - name: complaint_count
     data_tests:
     - not_null
+    description: Complaint count.
   - name: timely_response_count
     data_tests:
     - not_null
+    description: Timely response count.
   - name: not_timely_response_count
     data_tests:
     - not_null
+    description: Not timely response count.
   - name: known_timeliness_count
     data_tests:
     - not_null
+    description: Known timeliness count.
   - name: unknown_timeliness_count
     data_tests:
     - not_null
+    description: Unknown timeliness count.
   - name: narrative_count
     data_tests:
     - not_null
+    description: Narrative count.
   - name: closed_with_explanation_count
     data_tests:
     - not_null
+    description: Closed with explanation count.
   - name: monetary_relief_count
     data_tests:
     - not_null
+    description: Monetary relief count.
   - name: non_monetary_relief_count
     data_tests:
     - not_null
+    description: Non monetary relief count.
   - name: in_progress_count
     data_tests:
     - not_null
+    description: In progress count.
   - name: untimely_response_outcome_count
     data_tests:
     - not_null
+    description: Untimely response outcome count.
   - name: unknown_response_outcome_count
     data_tests:
     - not_null
+    description: Unknown response outcome count.
   - name: public_response_available_count
     data_tests:
     - not_null
+    description: Public response available count.
   - name: missing_state_count
     data_tests:
     - not_null
+    description: Missing state count.
   - name: missing_zip_count
     data_tests:
     - not_null
+    description: Missing zip count.
   - name: missing_issue_count
     data_tests:
     - not_null
+    description: Missing issue count.
   - name: missing_sub_issue_count
     data_tests:
     - not_null
+    description: Missing sub issue count.
   - name: sent_before_received_count
     data_tests:
     - not_null
+    description: Sent before received count.
+  description: 'Grain: one complaint. Reuse existing gold flags exactly so wide/star
+    query benchmarks share metric definitions.'

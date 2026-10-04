@@ -1,4 +1,5 @@
-SELECT complaint_id, tag_id
-FROM {{ ref('complaint_tags') }}
-GROUP BY complaint_id, tag_id
-HAVING COUNT(*) > 1
+-- Data test: return violating rows; zero rows means the assertion passes.
+select complaint_id, tag_id
+from {{ ref('complaint_tags') }}
+group by complaint_id, tag_id
+having count(*) > 1

@@ -1,5 +1,5 @@
-SELECT 'complaint_count_mismatch' AS failure
-WHERE
-    (SELECT COUNT(*) FROM {{ ref('complaint_metrics') }})
-    <>
-    (SELECT COUNT(*) FROM {{ ref('complaints') }})
+-- Data test: return violating rows; zero rows means the assertion passes.
+select 'complaint_count_mismatch' as failure
+where
+    (select count(*) from {{ ref('complaint_metrics') }})
+    <> (select count(*) from {{ ref('complaints') }})

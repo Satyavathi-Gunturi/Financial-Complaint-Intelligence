@@ -1,46 +1,74 @@
-
-WITH star_totals AS (
-    SELECT COUNT(*) AS rows, SUM(complaint_count) AS complaint_count,
-SUM(timely_response_count) AS timely_response_count,
-SUM(not_timely_response_count) AS not_timely_response_count,
-SUM(known_timeliness_count) AS known_timeliness_count,
-SUM(unknown_timeliness_count) AS unknown_timeliness_count,
-SUM(narrative_count) AS narrative_count,
-SUM(closed_with_explanation_count) AS closed_with_explanation_count,
-SUM(monetary_relief_count) AS monetary_relief_count,
-SUM(non_monetary_relief_count) AS non_monetary_relief_count,
-SUM(in_progress_count) AS in_progress_count,
-SUM(untimely_response_outcome_count) AS untimely_response_outcome_count,
-SUM(unknown_response_outcome_count) AS unknown_response_outcome_count,
-SUM(public_response_available_count) AS public_response_available_count,
-SUM(missing_state_count) AS missing_state_count,
-SUM(missing_zip_count) AS missing_zip_count,
-SUM(missing_issue_count) AS missing_issue_count,
-SUM(missing_sub_issue_count) AS missing_sub_issue_count,
-SUM(sent_before_received_count) AS sent_before_received_count
-    FROM {{ ref('fact_complaints') }}
-),
-wide_totals AS (
-    SELECT COUNT(*) AS rows, SUM(complaint_count) AS complaint_count,
-SUM(timely_response_count) AS timely_response_count,
-SUM(not_timely_response_count) AS not_timely_response_count,
-SUM(known_timeliness_count) AS known_timeliness_count,
-SUM(unknown_timeliness_count) AS unknown_timeliness_count,
-SUM(narrative_count) AS narrative_count,
-SUM(closed_with_explanation_count) AS closed_with_explanation_count,
-SUM(monetary_relief_count) AS monetary_relief_count,
-SUM(non_monetary_relief_count) AS non_monetary_relief_count,
-SUM(in_progress_count) AS in_progress_count,
-SUM(untimely_response_outcome_count) AS untimely_response_outcome_count,
-SUM(unknown_response_outcome_count) AS unknown_response_outcome_count,
-SUM(public_response_available_count) AS public_response_available_count,
-SUM(missing_state_count) AS missing_state_count,
-SUM(missing_zip_count) AS missing_zip_count,
-SUM(missing_issue_count) AS missing_issue_count,
-SUM(missing_sub_issue_count) AS missing_sub_issue_count,
-SUM(sent_before_received_count) AS sent_before_received_count
-    FROM {{ ref('complaint_metrics') }}
-)
-SELECT 'star_wide_mismatch' AS failure
-FROM star_totals s CROSS JOIN wide_totals w
-WHERE s.rows <> w.rows OR s.complaint_count IS DISTINCT FROM w.complaint_count OR s.timely_response_count IS DISTINCT FROM w.timely_response_count OR s.not_timely_response_count IS DISTINCT FROM w.not_timely_response_count OR s.known_timeliness_count IS DISTINCT FROM w.known_timeliness_count OR s.unknown_timeliness_count IS DISTINCT FROM w.unknown_timeliness_count OR s.narrative_count IS DISTINCT FROM w.narrative_count OR s.closed_with_explanation_count IS DISTINCT FROM w.closed_with_explanation_count OR s.monetary_relief_count IS DISTINCT FROM w.monetary_relief_count OR s.non_monetary_relief_count IS DISTINCT FROM w.non_monetary_relief_count OR s.in_progress_count IS DISTINCT FROM w.in_progress_count OR s.untimely_response_outcome_count IS DISTINCT FROM w.untimely_response_outcome_count OR s.unknown_response_outcome_count IS DISTINCT FROM w.unknown_response_outcome_count OR s.public_response_available_count IS DISTINCT FROM w.public_response_available_count OR s.missing_state_count IS DISTINCT FROM w.missing_state_count OR s.missing_zip_count IS DISTINCT FROM w.missing_zip_count OR s.missing_issue_count IS DISTINCT FROM w.missing_issue_count OR s.missing_sub_issue_count IS DISTINCT FROM w.missing_sub_issue_count OR s.sent_before_received_count IS DISTINCT FROM w.sent_before_received_count
+-- Data test: return violating rows; zero rows means the assertion passes.
+with
+    star_totals as (
+        select
+            count(*) as rows,
+            sum(complaint_count) as complaint_count,
+            sum(timely_response_count) as timely_response_count,
+            sum(not_timely_response_count) as not_timely_response_count,
+            sum(known_timeliness_count) as known_timeliness_count,
+            sum(unknown_timeliness_count) as unknown_timeliness_count,
+            sum(narrative_count) as narrative_count,
+            sum(closed_with_explanation_count) as closed_with_explanation_count,
+            sum(monetary_relief_count) as monetary_relief_count,
+            sum(non_monetary_relief_count) as non_monetary_relief_count,
+            sum(in_progress_count) as in_progress_count,
+            sum(untimely_response_outcome_count) as untimely_response_outcome_count,
+            sum(unknown_response_outcome_count) as unknown_response_outcome_count,
+            sum(public_response_available_count) as public_response_available_count,
+            sum(missing_state_count) as missing_state_count,
+            sum(missing_zip_count) as missing_zip_count,
+            sum(missing_issue_count) as missing_issue_count,
+            sum(missing_sub_issue_count) as missing_sub_issue_count,
+            sum(sent_before_received_count) as sent_before_received_count
+        from {{ ref('fact_complaints') }}
+    ),
+    wide_totals as (
+        select
+            count(*) as rows,
+            sum(complaint_count) as complaint_count,
+            sum(timely_response_count) as timely_response_count,
+            sum(not_timely_response_count) as not_timely_response_count,
+            sum(known_timeliness_count) as known_timeliness_count,
+            sum(unknown_timeliness_count) as unknown_timeliness_count,
+            sum(narrative_count) as narrative_count,
+            sum(closed_with_explanation_count) as closed_with_explanation_count,
+            sum(monetary_relief_count) as monetary_relief_count,
+            sum(non_monetary_relief_count) as non_monetary_relief_count,
+            sum(in_progress_count) as in_progress_count,
+            sum(untimely_response_outcome_count) as untimely_response_outcome_count,
+            sum(unknown_response_outcome_count) as unknown_response_outcome_count,
+            sum(public_response_available_count) as public_response_available_count,
+            sum(missing_state_count) as missing_state_count,
+            sum(missing_zip_count) as missing_zip_count,
+            sum(missing_issue_count) as missing_issue_count,
+            sum(missing_sub_issue_count) as missing_sub_issue_count,
+            sum(sent_before_received_count) as sent_before_received_count
+        from {{ ref('complaint_metrics') }}
+    )
+select 'star_wide_mismatch' as failure
+from star_totals s
+cross join wide_totals w
+where
+    s.rows <> w.rows
+    or s.complaint_count is distinct from w.complaint_count
+    or s.timely_response_count is distinct from w.timely_response_count
+    or s.not_timely_response_count is distinct from w.not_timely_response_count
+    or s.known_timeliness_count is distinct from w.known_timeliness_count
+    or s.unknown_timeliness_count is distinct from w.unknown_timeliness_count
+    or s.narrative_count is distinct from w.narrative_count
+    or s.closed_with_explanation_count is distinct from w.closed_with_explanation_count
+    or s.monetary_relief_count is distinct from w.monetary_relief_count
+    or s.non_monetary_relief_count is distinct from w.non_monetary_relief_count
+    or s.in_progress_count is distinct from w.in_progress_count
+    or s.untimely_response_outcome_count
+    is distinct from w.untimely_response_outcome_count
+    or s.unknown_response_outcome_count
+    is distinct from w.unknown_response_outcome_count
+    or s.public_response_available_count
+    is distinct from w.public_response_available_count
+    or s.missing_state_count is distinct from w.missing_state_count
+    or s.missing_zip_count is distinct from w.missing_zip_count
+    or s.missing_issue_count is distinct from w.missing_issue_count
+    or s.missing_sub_issue_count is distinct from w.missing_sub_issue_count
+    or s.sent_before_received_count is distinct from w.sent_before_received_count

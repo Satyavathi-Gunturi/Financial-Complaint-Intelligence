@@ -1,7 +1,9 @@
+-- Grain: one reported state/ZIP combination. Preserve masked ZIPs and NULL
+-- attributes; no geocoding is inferred.
 {{ config(materialized='table', schema='star') }}
 
-SELECT DISTINCT
-    md5(CAST(to_json(list_value(state, zip_code)) AS VARCHAR)) AS geography_id,
+select distinct
+    md5(cast(to_json(list_value(state, zip_code)) as varchar)) as geography_id,
     state,
     zip_code
-FROM {{ ref('complaint_metrics') }}
+from {{ ref('complaint_metrics') }}

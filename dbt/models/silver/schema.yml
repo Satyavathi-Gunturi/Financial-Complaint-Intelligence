@@ -6,18 +6,25 @@ models:
     data_tests:
     - not_null
     - unique
+    description: Stable key for the original source company label.
+  description: 'Grain: one source company label. Preserve source identity rather than
+    inferring corporate mergers.'
 - name: product_categories
   columns:
   - name: product_category_id
     data_tests:
     - not_null
     - unique
+    description: Stable key for the product/sub-product combination.
+  description: 'Grain: one product/sub-product combination. Optional sub-product labels
+    remain NULL.'
 - name: issue_categories
   columns:
   - name: issue_category_id
     data_tests:
     - not_null
     - unique
+    description: Stable key for product context plus issue/sub-issue.
   - name: product_category_id
     data_tests:
     - not_null
@@ -25,18 +32,25 @@ models:
         arguments:
           to: '{{ ref(''product_categories'') }}'
           field: product_category_id
+    description: Stable key for the product/sub-product combination.
+  description: 'Grain: one product-context/issue/sub-issue combination. Preserve taxonomy
+    context for repeated issue labels.'
 - name: submission_channels
   columns:
   - name: submission_channel_id
     data_tests:
     - not_null
     - unique
+    description: Stable key for the submission method.
+  description: 'Grain: one submission method. Shared lookup for complaint relationships.'
 - name: complaints
   columns:
   - name: complaint_id
     data_tests:
     - not_null
     - unique
+    description: Verified source complaint ID. Retained as text and unique at complaint
+      grain.
   - name: company_id
     data_tests:
     - not_null
@@ -44,6 +58,7 @@ models:
         arguments:
           to: '{{ ref(''companies'') }}'
           field: company_id
+    description: Stable key for the original source company label.
   - name: product_category_id
     data_tests:
     - not_null
@@ -51,6 +66,7 @@ models:
         arguments:
           to: '{{ ref(''product_categories'') }}'
           field: product_category_id
+    description: Stable key for the product/sub-product combination.
   - name: issue_category_id
     data_tests:
     - not_null
@@ -58,6 +74,7 @@ models:
         arguments:
           to: '{{ ref(''issue_categories'') }}'
           field: issue_category_id
+    description: Stable key for product context plus issue/sub-issue.
   - name: submission_channel_id
     data_tests:
     - not_null
@@ -65,6 +82,9 @@ models:
         arguments:
           to: '{{ ref(''submission_channels'') }}'
           field: submission_channel_id
+    description: Stable key for the submission method.
+  description: 'Grain: one complaint. Retain every staged record and source provenance;
+    narrative text is stored separately.'
 - name: complaint_narratives
   columns:
   - name: complaint_id
@@ -75,15 +95,23 @@ models:
         arguments:
           to: '{{ ref(''complaints'') }}'
           field: complaint_id
+    description: Verified source complaint ID. Retained as text and unique at complaint
+      grain.
   - name: narrative
     data_tests:
     - not_null
+    description: Source narrative text preserved when nonblank.
+  description: 'Grain: one narrative-bearing complaint. Keep nonblank narrative text
+    without changing its contents.'
 - name: tags
   columns:
   - name: tag_id
     data_tests:
     - not_null
     - unique
+    description: Tag id.
+  description: 'Grain: one tag label. Assign stable keys to individual tags, not comma-separated
+    tag combinations.'
 - name: complaint_tags
   columns:
   - name: complaint_id
@@ -93,6 +121,8 @@ models:
         arguments:
           to: '{{ ref(''complaints'') }}'
           field: complaint_id
+    description: Verified source complaint ID. Retained as text and unique at complaint
+      grain.
   - name: tag_id
     data_tests:
     - not_null
@@ -100,3 +130,6 @@ models:
         arguments:
           to: '{{ ref(''tags'') }}'
           field: tag_id
+    description: Tag id.
+  description: 'Grain: one complaint/tag pair. Filter this bridge with EXISTS to avoid
+    double counting complaints.'

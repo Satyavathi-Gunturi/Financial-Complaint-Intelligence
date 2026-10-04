@@ -1,6 +1,5 @@
-SELECT 'narrative_count_mismatch' AS failure
-WHERE
-    (SELECT COUNT(*) FROM {{ ref('complaint_narratives') }})
-    <>
-    (SELECT COUNT(*) FROM {{ ref('stg_complaints') }}
-     WHERE narrative IS NOT NULL)
+-- Data test: return violating rows; zero rows means the assertion passes.
+select 'narrative_count_mismatch' as failure
+where
+    (select count(*) from {{ ref('complaint_narratives') }})
+    <> (select count(*) from {{ ref('stg_complaints') }} where narrative is not null)

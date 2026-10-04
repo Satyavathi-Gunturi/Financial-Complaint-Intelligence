@@ -87,15 +87,19 @@ models:
   - name: date_received
     data_tests:
     - not_null
+    description: Date received.
   - name: company_name
     data_tests:
     - not_null
+    description: Company name.
   - name: product
     data_tests:
     - not_null
+    description: Product.
   - name: submission_channel
     data_tests:
     - not_null
+    description: Submission channel.
 - name: narrative_search_documents
   description: Published narratives joined to business context for future evidence
     retrieval.
@@ -104,6 +108,9 @@ models:
     data_tests:
     - not_null
     - unique
+    description: Verified source complaint ID. Retained as text and unique at complaint
+      grain.
   - name: narrative
     data_tests:
     - not_null
+    description: Source narrative text preserved when nonblank.
