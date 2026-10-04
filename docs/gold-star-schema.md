@@ -4,7 +4,7 @@
 
 ![Technical design diagram](../assets/diagrams/gold-star-schema.svg)
 
-[Open the full-size diagram](../assets/diagrams/gold-star-schema.svg) · [Project walkthrough](project-walkthrough.md) · [Metric definitions](metric-definitions.md)
+[Download editable draw.io file](../assets/diagrams/gold-star-schema.drawio) · [Open the full-size diagram](../assets/diagrams/gold-star-schema.svg) · [Project walkthrough](project-walkthrough.md) · [Metric definitions](metric-definitions.md)
 
 ---
 

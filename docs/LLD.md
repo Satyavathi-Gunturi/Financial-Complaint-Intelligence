@@ -4,7 +4,7 @@
 
 ![Technical design diagram](../assets/diagrams/low-level-contracts.svg)
 
-[Open the full-size diagram](../assets/diagrams/low-level-contracts.svg) · [Project walkthrough](project-walkthrough.md) · [Metric definitions](metric-definitions.md)
+[Download editable draw.io file](../assets/diagrams/low-level-contracts.drawio) · [Open the full-size diagram](../assets/diagrams/low-level-contracts.svg) · [Project walkthrough](project-walkthrough.md) · [Metric definitions](metric-definitions.md)
 
 ---
 
