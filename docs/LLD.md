@@ -1,5 +1,25 @@
 # Low-Level Design (LLD)
 
+**Engineering view:** physical schemas, field-level contracts, key construction, metric algebra and quality gates.
+
+![Technical design diagram](../assets/diagrams/low-level-contracts.svg)
+
+[Open the full-size diagram](../assets/diagrams/low-level-contracts.svg) · [Project walkthrough](project-walkthrough.md) · [Metric definitions](metric-definitions.md)
+
+---
+
+## Engineering invariants
+
+| Invariant | Design rule | Validation |
+|---|---|---|
+| Complaint grain | One source complaint per fact row | Unique ID + row-preservation tests |
+| Identity | Source ID as text; JSON-based category keys | Key uniqueness + relationship tests |
+| Missingness | Optional blanks become NULL | Required-field and outcome-partition tests |
+| Metrics | Additive 0/1 flags; aggregate before division | Binary and consistency tests |
+| Time | Received date default; Monday weeks; two calendar roles | Date key relationships + ISO-boundary smoke assertion |
+| Evidence | Preserve nonblank narrative text | Narrative-count preservation |
+| Parallel gold | Identical metric definitions in wide and star | Row and every-flag total reconciliation |
+
 ## Physical schemas
 | Schema | Objects |
 |---|---|

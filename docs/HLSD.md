@@ -1,9 +1,31 @@
 # High-Level System Design (HLSD)
 
+**Design view:** implemented data foundation and planned executive intelligence, with explicit component boundaries.
+
+![Technical design diagram](../assets/diagrams/system-architecture.svg)
+
+[Open the full-size diagram](../assets/diagrams/system-architecture.svg) · [Project walkthrough](project-walkthrough.md) · [Metric definitions](metric-definitions.md)
+
+---
+
+## Design summary
+
+| Decision | Implementation | Why it matters |
+|---|---|---|
+| Remote compute | Colab | Supports an iPad development workflow |
+| Transformation engine | DuckDB + dbt | Repeatable SQL with explicit quality gates |
+| Data architecture | Bronze → silver → gold | Preserves inputs and separates readiness levels |
+| Gold representation | Wide + additional star | Enables controlled agent query comparisons |
+| AI interaction | Planned SQL + narrative tools | Connects numerical answers to evidence |
+| Hosting boundary | Permanent hosting undecided | Avoids presenting development backups as serving infrastructure |
+
 ## Goal and scope
 Provide leadership with consistent complaint analytics and an evidence-backed data agent. The implemented scope is the batch data foundation; serving and AI are planned.
 
 ## Implemented processing
+<details>
+<summary>View the editable Mermaid definition</summary>
+
 ```mermaid
 flowchart TD
     S[Official CFPB downloads] --> I[Colab ZIP inventory and ingestion]
@@ -17,9 +39,14 @@ flowchart TD
     W --> CP
 ```
 
+</details>
+
 Colab supplies remote compute for an iPad-based workflow. DuckDB stores transformed tables. dbt manages dependencies, transformations and assertions. Checkpoints persist files and the closed database after successful stages. They are development backups, not an application-serving design.
 
 ## Planned serving and AI
+<details>
+<summary>View the editable Mermaid definition</summary>
+
 ```mermaid
 flowchart TD
     U[Leadership dashboard and chat] --> A[Data agent]
@@ -32,6 +59,8 @@ flowchart TD
     R --> E
     E --> U
 ```
+
+</details>
 
 The agent will choose date grouping and filters under documented metric definitions. SQL calculates quantities; retrieval supplies relevant complaint text. The LLM must not fabricate figures or establish internal root causes from narratives. Model/provider, permanent data hosting, vector index and dashboard hosting have not been selected or provisioned.
 

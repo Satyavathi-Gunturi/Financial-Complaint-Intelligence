@@ -1,6 +1,17 @@
 # Gold star schema
 
+**Dimensional view:** fact foreign keys, seven dimensions, two date roles and verified table cardinalities.
+
+![Technical design diagram](../assets/diagrams/gold-star-schema.svg)
+
+[Open the full-size diagram](../assets/diagrams/gold-star-schema.svg) · [Project walkthrough](project-walkthrough.md) · [Metric definitions](metric-definitions.md)
+
+---
+
 Grain: **one complaint per fact row**. Wide gold remains unchanged. The star is an additional gold query structure, with direct fact-to-dimension links and no dimension-to-dimension links.
+
+<details>
+<summary>View the editable Mermaid definition</summary>
 
 ```mermaid
 erDiagram
@@ -29,6 +40,8 @@ erDiagram
         int days_to_send_to_company
     }
 ```
+
+</details>
 
 | Table | Verified rows |
 |---|---:|

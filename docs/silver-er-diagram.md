@@ -1,6 +1,17 @@
 # Silver ER diagram
 
+**Relational view:** normalized complaint records, optional narratives and the many-to-many tag bridge.
+
+![Technical design diagram](../assets/diagrams/silver-relational-model.svg)
+
+[Open the full-size diagram](../assets/diagrams/silver-relational-model.svg) · [Project walkthrough](project-walkthrough.md) · [Metric definitions](metric-definitions.md)
+
+---
+
 These links describe dbt-tested relationships, not enforced DuckDB DDL constraints. One complaint has one company, product combination, issue combination and channel; it may have no narrative or multiple tags.
+
+<details>
+<summary>View the editable Mermaid definition</summary>
 
 ```mermaid
 erDiagram
@@ -55,5 +66,7 @@ erDiagram
         string tag_id PK,FK
     }
 ```
+
+</details>
 
 Complaint–tag pairs form a composite logical key. Complaints also retain state, response categories, narrative availability and ingestion provenance. The SQL files provide the complete column definitions.
