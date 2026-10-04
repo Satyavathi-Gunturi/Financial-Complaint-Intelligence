@@ -1,0 +1,15 @@
+grain: one row per complaint
+default_date: date_received
+week_starts: Monday
+complaint_volume: SUM(complaint_count)
+timely_response_rate_pct: 100.0 * SUM(timely_response_count) / NULLIF(SUM(known_timeliness_count),
+  0)
+narrative_coverage_pct: 100.0 * SUM(narrative_count) / NULLIF(SUM(complaint_count),
+  0)
+limitations:
+- Metrics describe the downloaded exports, not a live feed.
+- Response outcomes do not measure customer satisfaction.
+- Relief categories do not provide financial amounts.
+- Days to send to company is not resolution time.
+- No published narrative does not mean no customer problem.
+- Missing state or ZIP does not imply a missing customer address.

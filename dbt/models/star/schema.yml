@@ -1,0 +1,164 @@
+version: 2
+models:
+- name: dim_company
+  columns:
+  - name: company_id
+    data_tests:
+    - not_null
+    - unique
+- name: dim_product
+  columns:
+  - name: product_category_id
+    data_tests:
+    - not_null
+    - unique
+- name: dim_issue
+  columns:
+  - name: issue_category_id
+    data_tests:
+    - not_null
+    - unique
+- name: dim_submission_channel
+  columns:
+  - name: submission_channel_id
+    data_tests:
+    - not_null
+    - unique
+- name: dim_geography
+  columns:
+  - name: geography_id
+    data_tests:
+    - not_null
+    - unique
+- name: dim_response
+  columns:
+  - name: response_id
+    data_tests:
+    - not_null
+    - unique
+- name: dim_date
+  columns:
+  - name: date_key
+    data_tests:
+    - not_null
+    - unique
+- name: fact_complaints
+  columns:
+  - name: complaint_id
+    data_tests:
+    - not_null
+    - unique
+    - relationships:
+        arguments:
+          to: '{{ ref(''complaint_metrics'') }}'
+          field: complaint_id
+  - name: company_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''dim_company'') }}'
+          field: company_id
+  - name: product_category_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''dim_product'') }}'
+          field: product_category_id
+  - name: issue_category_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''dim_issue'') }}'
+          field: issue_category_id
+  - name: submission_channel_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''dim_submission_channel'') }}'
+          field: submission_channel_id
+  - name: geography_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''dim_geography'') }}'
+          field: geography_id
+  - name: response_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''dim_response'') }}'
+          field: response_id
+  - name: received_date_key
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''dim_date'') }}'
+          field: date_key
+  - name: sent_date_key
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''dim_date'') }}'
+          field: date_key
+  - name: complaint_count
+    data_tests:
+    - not_null
+  - name: timely_response_count
+    data_tests:
+    - not_null
+  - name: not_timely_response_count
+    data_tests:
+    - not_null
+  - name: known_timeliness_count
+    data_tests:
+    - not_null
+  - name: unknown_timeliness_count
+    data_tests:
+    - not_null
+  - name: narrative_count
+    data_tests:
+    - not_null
+  - name: closed_with_explanation_count
+    data_tests:
+    - not_null
+  - name: monetary_relief_count
+    data_tests:
+    - not_null
+  - name: non_monetary_relief_count
+    data_tests:
+    - not_null
+  - name: in_progress_count
+    data_tests:
+    - not_null
+  - name: untimely_response_outcome_count
+    data_tests:
+    - not_null
+  - name: unknown_response_outcome_count
+    data_tests:
+    - not_null
+  - name: public_response_available_count
+    data_tests:
+    - not_null
+  - name: missing_state_count
+    data_tests:
+    - not_null
+  - name: missing_zip_count
+    data_tests:
+    - not_null
+  - name: missing_issue_count
+    data_tests:
+    - not_null
+  - name: missing_sub_issue_count
+    data_tests:
+    - not_null
+  - name: sent_before_received_count
+    data_tests:
+    - not_null

@@ -1,0 +1,109 @@
+version: 2
+models:
+- name: complaint_metrics
+  description: Complaint-level business metrics. No date filtering. Aggregate count
+    flags before calculating rates.
+  columns:
+  - name: complaint_id
+    description: One unique complaint per row.
+    data_tests:
+    - not_null
+    - unique
+  - name: complaint_count
+    description: Always 1. Sum to calculate complaint volume.
+    data_tests:
+    - not_null
+  - name: days_to_send_to_company
+    description: Days from receipt to sending to company. Does not measure company
+      response or resolution time.
+  - name: timely_response_count
+    description: Source marks the company response as timely.
+    data_tests:
+    - not_null
+  - name: not_timely_response_count
+    description: Source marks the company response as not timely.
+    data_tests:
+    - not_null
+  - name: known_timeliness_count
+    description: Denominator for the timely response rate.
+    data_tests:
+    - not_null
+  - name: unknown_timeliness_count
+    description: Timeliness is unavailable.
+    data_tests:
+    - not_null
+  - name: narrative_count
+    description: Published narrative is available.
+    data_tests:
+    - not_null
+  - name: closed_with_explanation_count
+    description: Recorded response outcome is closed with explanation.
+    data_tests:
+    - not_null
+  - name: monetary_relief_count
+    description: Recorded outcome includes monetary relief; amount is unknown.
+    data_tests:
+    - not_null
+  - name: non_monetary_relief_count
+    description: Recorded outcome includes non-monetary relief.
+    data_tests:
+    - not_null
+  - name: in_progress_count
+    description: Recorded outcome is in progress in this source export.
+    data_tests:
+    - not_null
+  - name: untimely_response_outcome_count
+    description: Recorded outcome category; separate from timely_response.
+    data_tests:
+    - not_null
+  - name: unknown_response_outcome_count
+    description: Response outcome is unavailable.
+    data_tests:
+    - not_null
+  - name: public_response_available_count
+    description: A company public response category is present.
+    data_tests:
+    - not_null
+  - name: missing_state_count
+    description: State is unavailable.
+    data_tests:
+    - not_null
+  - name: missing_zip_count
+    description: ZIP code is unavailable.
+    data_tests:
+    - not_null
+  - name: missing_issue_count
+    description: Issue is unavailable.
+    data_tests:
+    - not_null
+  - name: missing_sub_issue_count
+    description: Sub-issue is unavailable.
+    data_tests:
+    - not_null
+  - name: sent_before_received_count
+    description: Recorded sending date precedes receipt; investigate date quality.
+    data_tests:
+    - not_null
+  - name: date_received
+    data_tests:
+    - not_null
+  - name: company_name
+    data_tests:
+    - not_null
+  - name: product
+    data_tests:
+    - not_null
+  - name: submission_channel
+    data_tests:
+    - not_null
+- name: narrative_search_documents
+  description: Published narratives joined to business context for future evidence
+    retrieval.
+  columns:
+  - name: complaint_id
+    data_tests:
+    - not_null
+    - unique
+  - name: narrative
+    data_tests:
+    - not_null

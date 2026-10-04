@@ -1,0 +1,102 @@
+version: 2
+models:
+- name: companies
+  columns:
+  - name: company_id
+    data_tests:
+    - not_null
+    - unique
+- name: product_categories
+  columns:
+  - name: product_category_id
+    data_tests:
+    - not_null
+    - unique
+- name: issue_categories
+  columns:
+  - name: issue_category_id
+    data_tests:
+    - not_null
+    - unique
+  - name: product_category_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''product_categories'') }}'
+          field: product_category_id
+- name: submission_channels
+  columns:
+  - name: submission_channel_id
+    data_tests:
+    - not_null
+    - unique
+- name: complaints
+  columns:
+  - name: complaint_id
+    data_tests:
+    - not_null
+    - unique
+  - name: company_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''companies'') }}'
+          field: company_id
+  - name: product_category_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''product_categories'') }}'
+          field: product_category_id
+  - name: issue_category_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''issue_categories'') }}'
+          field: issue_category_id
+  - name: submission_channel_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''submission_channels'') }}'
+          field: submission_channel_id
+- name: complaint_narratives
+  columns:
+  - name: complaint_id
+    data_tests:
+    - not_null
+    - unique
+    - relationships:
+        arguments:
+          to: '{{ ref(''complaints'') }}'
+          field: complaint_id
+  - name: narrative
+    data_tests:
+    - not_null
+- name: tags
+  columns:
+  - name: tag_id
+    data_tests:
+    - not_null
+    - unique
+- name: complaint_tags
+  columns:
+  - name: complaint_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''complaints'') }}'
+          field: complaint_id
+  - name: tag_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: '{{ ref(''tags'') }}'
+          field: tag_id

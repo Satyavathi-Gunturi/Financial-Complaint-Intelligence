@@ -1,0 +1,33 @@
+{
+  "provenance": "Observed user Colab output, 2026-10-04",
+  "overall": {
+    "rows": 14482997,
+    "distinct_ids": 14482997,
+    "missing_ids": 0,
+    "unparsed_received_dates": 0,
+    "narratives": 2711935,
+    "timely": 14423232,
+    "not_timely": 59765,
+    "missing_response_outcomes": 19
+  },
+  "silver": {
+    "companies": 5661,
+    "product_categories": 76,
+    "issue_categories": 1945,
+    "submission_channels": 5,
+    "complaints": 14482997,
+    "complaint_narratives": 2711935,
+    "tags": 2,
+    "complaint_tags": 484025
+  },
+  "star": {
+    "dim_company": 5661,
+    "dim_product": 76,
+    "dim_issue": 1945,
+    "dim_submission_channel": 5,
+    "dim_geography": 31124,
+    "dim_response": 69,
+    "dim_date": 1411,
+    "fact_complaints": 14482997
+  }
+}

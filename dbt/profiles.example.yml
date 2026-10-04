@@ -1,0 +1,12 @@
+financial_complaint_intelligence:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: '{{ env_var(''FCI_DATABASE_PATH'', ''../data/complaints.duckdb'') }}'
+      schema: main
+      threads: 1
+      settings:
+        memory_limit: 2GB
+        temp_directory: '{{ env_var(''FCI_TEMP_DIRECTORY'', ''../data/duckdb_temp'')
+          }}'

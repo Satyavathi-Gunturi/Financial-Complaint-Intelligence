@@ -1,0 +1,20 @@
+# Data and temporary databases
+/data/
+*.parquet
+*.duckdb
+*.duckdb.wal
+*.csv.zip
+CCDB_Export_*.zip
+# Private/runtime configuration
+dbt/profiles.yml
+.env
+.env.*
+!.env.example
+# Generated dbt and Python files
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/

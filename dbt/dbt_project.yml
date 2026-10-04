@@ -1,0 +1,19 @@
+config-version: 2
+model-paths:
+- models
+models:
+  financial_complaint_intelligence:
+    gold:
+      +materialized: table
+      +schema: gold
+    silver:
+      +materialized: table
+      +schema: silver
+    staging:
+      +materialized: view
+      +schema: staging
+name: financial_complaint_intelligence
+profile: financial_complaint_intelligence
+test-paths:
+- tests
+version: 1.0.0

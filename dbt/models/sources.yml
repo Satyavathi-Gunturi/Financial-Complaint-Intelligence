@@ -1,0 +1,7 @@
+sources:
+- name: bronze
+  schema: main
+  tables:
+  - description: All selected CFPB exports, preserved in Parquet.
+    name: bronze_complaints
+version: 2
