@@ -1,0 +1,28 @@
+name: CFPB access diagnostics
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/cfpb-access-diagnostics.yml'
+      - 'scripts/diagnose_cfpb_access.py'
+permissions:
+  contents: read
+jobs:
+  inspect-access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect catalogue, archive and bounded API export
+        run: python scripts/diagnose_cfpb_access.py
+      - name: Preserve endpoint evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cfpb-access-${{ github.run_id }}
+          path: data/diagnostics/cfpb_access.json
+          retention-days: 14
+          if-no-files-found: warn
