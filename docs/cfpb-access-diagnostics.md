@@ -2,9 +2,9 @@
 
 Observed 2026-10-05 at 23:10 UTC from a GitHub-hosted Ubuntu runner. [Diagnostic run](https://github.com/Satyavathi-Gunturi/Financial-Complaint-Intelligence/actions/runs/37386931066). The reproducible response evidence is in [cfpb_access_diagnostic.json](../reports/cfpb_access_diagnostic.json).
 
-## Refresh hold
+## Refresh availability
 
-Further data updates and refresh are on hold until CFPB access is restored and verified. The scheduled/push triggers are removed and the release job is explicitly disabled. Lift this hold through a reviewed PR before resuming ingestion or publication.
+Daily and automatic refresh remain enabled. The observed CFPB HTTP 403 access issue may prevent data updates; failed attempts preserve the last validated dashboard snapshot. Successful source access plus all validation and publication gates are required for an updated release.
 
 ![GitHub diagnostic screenshot showing HTTP 403 and Akamai Access Denied](../assets/screenshots/cfpb-403-access-denied.jpg)
 
@@ -36,4 +36,4 @@ The [current API release notes](https://cfpb.github.io/api/ccdb/release-notes.ht
 
 ## Repeat the diagnostic
 
-Use the manual **CFPB access diagnostics** workflow for a deliberate authorized check, or run `python scripts/diagnose_cfpb_access.py` in the execution environment under investigation. The workflow is manual-only while refresh is on hold; PR changes do not automatically probe CFPB. HTTP rejection is recorded as evidence rather than failing the diagnostic job; a green diagnostic check means evidence collection completed, not that source access succeeded. Artifacts expire after 14 days; the versioned report preserves this observed result.
+Use the manual **CFPB access diagnostics** workflow for a deliberate authorized check, or run `python scripts/diagnose_cfpb_access.py` in the execution environment under investigation. The diagnostic workflow is manual-only; PR changes do not automatically probe CFPB. HTTP rejection is recorded as evidence rather than failing the diagnostic job; a green diagnostic check means evidence collection completed, not that source access succeeded. Artifacts expire after 14 days; the versioned report preserves this observed result.

@@ -313,7 +313,7 @@ p.card(
     130,
     "Refresh orchestration",
     "WORKFLOW / GITHUB ACTIONS",
-    ["ON HOLD; daily trigger disabled"],
+    ["Daily 11:23 UTC + manual force run"],
     "clock",
 )
 p.card(
@@ -480,7 +480,7 @@ p.note(
     67,
     "CURRENT STATUS",
     [
-        "REFRESH ON HOLD — HTTP 403. Triggers paused; release job disabled. Dashboard retains the validated Nov 2022–Aug 2026 snapshot."
+        "Refresh enabled. CFPB HTTP 403 may prevent updates; failed runs retain the last validated Nov 2022–Aug 2026 snapshot."
     ],
     RED,
 )
@@ -789,7 +789,7 @@ model_page.note(
     165,
     "TRIGGER / PRECONDITIONS",
     [
-        "ON HOLD; triggers disabled",
+        "Daily scheduler or manual force",
         "Validate catalogue coverage",
         "Check available runner disk",
         "HTTP 403 currently blocks ZIP fetch",
