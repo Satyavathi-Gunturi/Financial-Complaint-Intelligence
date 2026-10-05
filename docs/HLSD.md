@@ -54,3 +54,6 @@ The AI agent will combine constrained read-only SQL with filtered narrative retr
 GitHub stores code, designs and compact serving releases. Source ZIP caches are disposable; the runner's bronze and full DuckDB files are temporary. Build evidence artifacts have 14-day retention. Durable source-version storage and permanent detailed-data serving are future work. Drive backups remain untouched.
 
 Repository permissions must permit bot PR creation. GITHUB_TOKEN-created PRs do not trigger independent Actions CI; the refresh job validates before creating them. Required checks/reviews can leave a release PR pending. GitHub schedules may be delayed or disabled after 60 days without repository activity. CFPB release timing is outside this system's control. Source/schema changes fail closed. The dashboard is a public complaint snapshot, not a live operational backlog or an incident-rate comparison adjusted for company size.
+
+
+Current full-run blocker (2026-10-05): GitHub-hosted execution successfully discovered the archive catalogue and passed synthetic dbt validation, but its first source ZIP request returned HTTP 403. No refreshed datasets were published. Unattended full-data ingestion requires an allowed download path or execution environment; it is not yet operational. Existing dashboard datasets remain unchanged.

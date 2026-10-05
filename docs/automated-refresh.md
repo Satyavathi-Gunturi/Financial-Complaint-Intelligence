@@ -40,3 +40,6 @@ The final command stages a full release in `data/release`; it does not publish b
 ## Pull request publication
 
 Enable **Allow GitHub Actions to create and approve pull requests** under repository Settings → Actions → General → Workflow permissions if GitHub blocks automated PR creation. The workflow token requests repository contents and pull-request write access. No additional credentials are required. PRs created by GITHUB_TOKEN do not trigger other Actions workflows: the release job performs its own full validation before creating the PR. Required branch checks/review rules remain authoritative; if they block an immediate merge, the PR remains pending and the current serving data is preserved. A separately configured GitHub App or suitable scoped token would be needed to trigger independent PR CI for bot-created releases.
+
+
+Current full-run blocker (2026-10-05): GitHub-hosted execution successfully discovered the archive catalogue and passed synthetic dbt validation, but its first source ZIP request returned HTTP 403. No refreshed datasets were published. Unattended full-data ingestion requires an allowed download path or execution environment; it is not yet operational. Existing dashboard datasets remain unchanged.

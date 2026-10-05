@@ -71,3 +71,6 @@ The [scheduled refresh pipeline](docs/automated-refresh.md) checks public CFPB a
 Use [the reproduction guide](docs/reproduction.md) to run entirely in Colab or run the extracted dbt project against existing bronze Parquet. Versions observed in the successful Colab environment are pinned in `requirements.txt`.
 
 > Narrative availability varies markedly by year. Show coverage alongside AI findings; absence of published text is not absence of customer problems. This is an analysis of a downloaded snapshot, not a live complaint feed.
+
+
+Current full-run blocker (2026-10-05): GitHub-hosted execution successfully discovered the archive catalogue and passed synthetic dbt validation, but its first source ZIP request returned HTTP 403. No refreshed datasets were published. Unattended full-data ingestion requires an allowed download path or execution environment; it is not yet operational. Existing dashboard datasets remain unchanged.
