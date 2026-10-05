@@ -4,9 +4,9 @@ The live Colab notebook `01_CFPB_Data_Exploration.ipynb` was read on 2026-10-05.
 
 ## Schedule and activation
 
-**ON HOLD as of 2026-10-05.** Scheduled and push triggers have been removed from `.github/workflows/data-refresh.yml`, and the refresh job has an explicit false condition, so manual dispatch cannot ingest or publish while the hold remains. The current dashboard snapshot is preserved. The access diagnostic workflow is manual-only; it does not refresh data.
+**Refresh remains enabled.** `.github/workflows/data-refresh.yml` checks daily at **11:23 UTC** (06:23 Central daylight time; 05:23 Central standard time), on relevant main-branch code changes, or by manual dispatch. CFPB HTTP 403 errors may prevent a run from downloading data. A failed run publishes no replacement datasets, and the dashboard retains its last validated snapshot. Access diagnostics remain manual-only.
 
-The intended cadence after resumption is daily at **11:23 UTC** (06:23 Central daylight time; 05:23 Central standard time). Resumption requires verified CFPB access, an explicit decision to lift the hold, and a reviewed PR that removes the job hold and restores the intended triggers. The error disappearing does not automatically re-enable the pipeline. No Drive credentials or LLM/API subscription is used by the existing archive implementation. Repository rules still govern publication.
+The next scheduled run can complete when source access is available and every build, reconciliation and publication gate succeeds. No additional hold needs to be lifted. No Drive credentials or LLM/API subscription is used by the existing archive implementation. Repository rules still govern publication.
 
 ![Screenshot of the preserved HTTP 403 evidence](../assets/screenshots/cfpb-403-access-denied.jpg)
 
