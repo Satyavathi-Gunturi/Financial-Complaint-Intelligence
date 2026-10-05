@@ -43,3 +43,6 @@ Enable **Allow GitHub Actions to create and approve pull requests** under reposi
 
 
 Current full-run blocker (2026-10-05): GitHub-hosted execution successfully discovered the archive catalogue and passed synthetic dbt validation, but its first source ZIP request returned HTTP 403. No refreshed datasets were published. Unattended full-data ingestion requires an allowed download path or execution environment; it is not yet operational. Existing dashboard datasets remain unchanged.
+
+## Access investigation
+The bounded GitHub-runner diagnostic reproduced HTTP 403 for the catalogue, first ZIP and official API CSV export. Akamai Access Denied responses identify the delivery/access layer; the exact rejection rule is unknown. See [investigation and preserved evidence](cfpb-access-diagnostics.md). The API also has changed export limits and no longer supplies current narratives, so switching endpoints is not yet a validated solution.
