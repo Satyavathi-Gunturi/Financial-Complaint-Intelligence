@@ -9,7 +9,7 @@ import streamlit as st
 
 DATA = Path(__file__).resolve().parents[1] / "dashboard_daily_company_product.parquet"
 st.set_page_config(
-    page_title="Financial Complaint Intelligence", page_icon="📊", layout="wide"
+    page_title="Financial Complaint Intelligence", page_icon="◈", layout="wide"
 )
 
 
@@ -27,11 +27,60 @@ def rate(numerator, denominator):
     return f"{100 * numerator / denominator:.2f}%" if denominator else "N/A"
 
 
-st.title("Financial Complaint Intelligence")
-st.caption("CFPB complaint snapshot · Received November 2022–August 2026")
-st.info(
-    "Explore reported complaint patterns and recorded responses. Volumes are not adjusted for company size or customer count and do not establish root causes."
+st.markdown(
+    """
+<style>
+[data-testid="stAppViewContainer"] {background: #f3f5f8;}
+[data-testid="stHeader"] {background: rgba(243,245,248,.96);}
+.block-container {padding-top: 2.2rem; padding-bottom: 3rem; max-width: 1550px;}
+[data-testid="stSidebar"] {background: #e9eef4; border-right: 1px solid #d7e0e9;}
+h1,h2,h3 {color: #10243a; letter-spacing: -.035em;}
+h3 {font-size: 1.2rem !important; margin-top: .8rem;}
+[data-testid="stMetric"] {background: #fff; border: 1px solid #e0e6ee; border-top: 3px solid #147d83; border-radius: 14px; padding: 20px 18px; box-shadow: 0 4px 16px rgba(20,38,62,.035);}
+[data-testid="stMetricLabel"] {color: #52657a; font-size: .83rem;}
+[data-testid="stMetricValue"] {color: #10243a; font-weight: 650; font-size: clamp(1.35rem,2.1vw,2.3rem); letter-spacing: -.045em;}
+[data-testid="stPlotlyChart"] {background: white; border: 1px solid #e0e6ee; border-radius: 14px; overflow: hidden; padding: 5px;}
+[data-testid="stExpander"] {background: #fff; border: 1px solid #e0e6ee; border-radius: 12px;}
+.hero {background: linear-gradient(115deg,#0d2137 0%,#153951 70%,#17565c 100%); border-radius: 18px; padding: 30px 34px; margin-bottom: 22px; color: #fff;}
+.hero .eyebrow {color: #8de0d2; font-size: .7rem; letter-spacing: .18em; font-weight: 700; margin-bottom: 13px;}
+.hero h1 {color: #fff; font-size: clamp(1.7rem,3vw,2.6rem); line-height: 1.12; padding: 0; margin: 0 0 12px; letter-spacing: -.045em;}
+.hero p {color: #c0d2df; font-size: .94rem; margin: 0 0 20px; max-width: 750px;}
+.badge {display: inline-block; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 30px; padding: 5px 12px; margin: 0 6px 4px 0; font-size: .72rem; color: #d6e6ef;}
+.scope {color: #52657a; font-size: .8rem; margin: 4px 0 18px;}
+.brief {background: #e5f1ef; border-left: 3px solid #147d83; padding: 14px 18px; border-radius: 0 10px 10px 0; color: #254d50; margin: 12px 0 20px; font-size: .88rem;}
+.footer {border-top: 1px solid #dbe2eb; color: #64748b; font-size: .75rem; padding-top: 16px; margin-top: 28px;}
+@media(max-width: 700px) {.hero {padding: 22px;} .block-container {padding-top: 1.3rem;} [data-testid="stMetric"] {padding: 14px;}}
+</style>
+<div class="hero">
+<div class="eyebrow">FINANCIAL COMPLAINT INTELLIGENCE / EXECUTIVE OVERVIEW</div>
+<h1>A clearer view of customer complaints.</h1>
+<p>Explore complaint demand, recorded company responses and the availability of customer narrative evidence.</p>
+<span class="badge">CFPB public complaint data</span>
+<span class="badge">Nov 2022 – Aug 2026</span>
+<span class="badge">Validated snapshot</span>
+</div>
+""",
+    unsafe_allow_html=True,
 )
+
+
+def style_chart(fig, height=340):
+    """Apply a consistent, readable executive chart theme."""
+    fig.update_layout(
+        template="plotly_white",
+        height=height,
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        font=dict(family="Arial, sans-serif", color="#52657a", size=12),
+        margin=dict(l=20, r=24, t=30, b=35),
+        colorway=["#147d83", "#294e73", "#63ada7", "#b99154", "#95a6b8"],
+        hoverlabel=dict(bgcolor="#10243a", font_color="white"),
+    )
+    fig.update_xaxes(showgrid=False, zeroline=False)
+    fig.update_yaxes(gridcolor="#edf1f5", zeroline=False)
+    return fig
+
+
 if not DATA.exists():
     st.error(
         "Dashboard dataset is missing. Add dashboard_daily_company_product.parquet at the repository root."
@@ -42,7 +91,9 @@ bounds = query(
     "SELECT MIN(date_received) AS first, MAX(date_received) AS last FROM metrics"
 ).iloc[0]
 with st.sidebar:
-    st.header("Explore the snapshot")
+    st.markdown("### ◈ Intelligence workspace")
+    st.caption("Configure the executive view")
+    st.divider()
     dates = st.date_input(
         "Received date range",
         value=(bounds["first"].date(), bounds["last"].date()),
@@ -109,6 +160,10 @@ if not totals["complaints"]:
     st.warning("No complaints match these filters. Adjust the selections.")
     st.stop()
 
+st.markdown(
+    f'<div class="scope">SELECTED VIEW · {dates[0]:%d %b %Y} — {dates[1]:%d %b %Y} · {len(companies) if companies else "All"} companies · {len(products) if products else "All"} products</div>',
+    unsafe_allow_html=True,
+)
 cards = st.columns(4)
 cards[0].metric("Complaints", f"{int(totals['complaints']):,}")
 cards[1].metric("Timely response rate", rate(totals["timely"], totals["known"]))
@@ -124,21 +179,25 @@ trend = query(
     + " GROUP BY 1 ORDER BY 1",
     params,
 )
-st.subheader("Complaint volume over time")
+st.subheader("01 / Complaint demand")
 st.plotly_chart(
-    px.line(
-        trend,
-        x="period",
-        y="complaints",
-        markers=True,
-        labels={"period": "Received period", "complaints": "Complaints"},
-    ),
+    style_chart(
+        px.area(
+            trend,
+            x="period",
+            y="complaints",
+            markers=True,
+            labels={"period": "Received period", "complaints": "Complaints"},
+            color_discrete_sequence=["#147d83"],
+        )
+    ).update_traces(line_width=2.5, fillcolor="rgba(20,125,131,.09)", marker_size=5),
     width="stretch",
 )
 st.caption(
     "First and last buckets may cover partial periods. A missing bucket has no matching complaints; published narratives are available only for a subset of records."
 )
 
+st.subheader("02 / Where complaints concentrate")
 left, right = st.columns(2)
 for column, label, container in [
     ("company_name", "Companies", left),
@@ -147,18 +206,27 @@ for column, label, container in [
     ranked = query(
         f"SELECT COALESCE({column}, 'Missing label') AS category, SUM(complaint_count) AS complaints FROM metrics"
         + where
-        + " GROUP BY 1 ORDER BY complaints DESC, category LIMIT 15",
+        + " GROUP BY 1 ORDER BY complaints DESC, category LIMIT 10",
         params,
     )
     with container:
-        st.subheader(f"Top {label.lower()} by volume")
+        st.markdown(f"**Top 10 {label.lower()}**")
         st.plotly_chart(
-            px.bar(
-                ranked.sort_values("complaints"),
-                x="complaints",
-                y="category",
-                orientation="h",
-                labels={"category": label, "complaints": "Complaints"},
+            style_chart(
+                px.bar(
+                    ranked.sort_values("complaints").assign(
+                        display_label=lambda frame: frame["category"].map(
+                            lambda label: label if len(label) < 36 else label[:33] + "…"
+                        )
+                    ),
+                    x="complaints",
+                    y="display_label",
+                    orientation="h",
+                    labels={"display_label": "", "complaints": "Complaints"},
+                    hover_name="category",
+                    color_discrete_sequence=["#294e73"],
+                ),
+                height=400,
             ),
             width="stretch",
         )
@@ -183,9 +251,19 @@ outcome_rows.append(
     )
 )
 outcome_frame = pd.DataFrame(outcome_rows, columns=["Recorded outcome", "Complaints"])
-st.subheader("Recorded company response outcomes")
+st.subheader("03 / Recorded response outcomes")
 st.plotly_chart(
-    px.bar(outcome_frame, x="Recorded outcome", y="Complaints"),
+    style_chart(
+        px.bar(
+            outcome_frame.sort_values("Complaints"),
+            x="Complaints",
+            y="Recorded outcome",
+            orientation="h",
+            color_discrete_sequence=["#147d83"],
+            labels={"Recorded outcome": ""},
+        ),
+        height=340,
+    ),
     width="stretch",
 )
 st.caption(
@@ -202,3 +280,8 @@ with st.expander("Trend data and definitions"):
     st.markdown(
         "**Timely response rate:** timely response count ÷ known timeliness count. **Narrative coverage:** published narrative count ÷ complaint count. This aggregate supports date, company and product exploration. Issue, state, individual narrative retrieval and AI chat are not included in this dashboard."
     )
+
+st.markdown(
+    '<div class="footer">Financial Complaint Intelligence · Source: CFPB public complaint snapshot. Raw volumes are not normalized by company size or customer count and do not establish internal root causes.</div>',
+    unsafe_allow_html=True,
+)
