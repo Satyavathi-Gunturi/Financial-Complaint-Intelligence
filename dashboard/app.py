@@ -1,5 +1,6 @@
 """Explore the validated CFPB daily company/product complaint snapshot."""
 
+import json
 from pathlib import Path
 
 import duckdb
@@ -20,13 +21,20 @@ st.set_page_config(
 )
 
 
-@st.cache_data(show_spinner=False)
-def query(sql, params=(), dataset="overview"):
+@st.cache_data(show_spinner=False, max_entries=128)
+def cached_query(sql, params, dataset, version):
     """Run parameterized analytics on the packaged Parquet snapshot."""
     with duckdb.connect() as con:
         con.execute("SET memory_limit='512MB'")
         con.read_parquet(str(DATASETS[dataset])).create_view("metrics")
         return con.execute(sql, list(params)).fetchdf()
+
+
+def query(sql, params=(), dataset="overview"):
+    """Cache by file identity so published dataset replacements invalidate results."""
+    path = DATASETS[dataset]
+    info = path.stat()
+    return cached_query(sql, params, dataset, (info.st_mtime_ns, info.st_size))
 
 
 def rate(numerator, denominator):
@@ -105,6 +113,19 @@ if not DATA.exists():
         "Dashboard dataset is missing. Add dashboard_daily_company_product.parquet at the repository root."
     )
     st.stop()
+
+manifest_path = ROOT / "reports/refresh_manifest.json"
+if manifest_path.exists():
+    manifest = json.loads(manifest_path.read_text())
+    st.caption(
+        f"Rolling {manifest['retention_months']}-month publication · "
+        f"Coverage through {manifest['observed_last_date']} · "
+        f"Last validated refresh: {manifest['validated_at'][:16].replace('T', ' ')} UTC"
+    )
+else:
+    st.caption(
+        "Historical snapshot · Scheduled rolling refresh awaiting its first validated publication."
+    )
 
 bounds = query(
     "SELECT MIN(date_received) AS first, MAX(date_received) AS last FROM metrics"

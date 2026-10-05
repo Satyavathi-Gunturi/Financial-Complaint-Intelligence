@@ -55,6 +55,10 @@ Downloaded from the official [CFPB Consumer Complaint Database Narratives Archiv
 ## Validation
 The packaged project passed a synthetic smoke build: **21 models and 126 dbt data tests**, plus edge-case assertions. The workflow in `.github/workflows/dbt-smoke.yml` repeats this check on pushes and pull requests. Full-data results remain separately documented.
 
+## Automated refresh
+
+The [scheduled refresh pipeline](docs/automated-refresh.md) checks public CFPB archives daily and stages a validated rolling 36-month release on source or transformation changes. It rebuilds all dbt layers and publishes the four dashboard exports in one commit. First full-data runner publication must pass before the historical dashboard snapshot is replaced. The live Colab notebook remains the interactive development workflow.
+
 ## Get started
 Use [the reproduction guide](docs/reproduction.md) to run entirely in Colab or run the extracted dbt project against existing bronze Parquet. Versions observed in the successful Colab environment are pinned in `requirements.txt`.
 
