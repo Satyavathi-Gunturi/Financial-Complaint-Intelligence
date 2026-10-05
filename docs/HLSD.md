@@ -1,5 +1,7 @@
 # High-Level System Design (HLSD)
 
+> **Refresh ON HOLD (2026-10-05):** CFPB HTTP 403 access errors prevent updates. Automatic triggers are paused and the release job is disabled until verified access and explicit resumption. See the [hold notice](../docs/automated-refresh.md).
+
 The system prepares public CFPB complaint data for a six-tab leadership dashboard and a future evidence-backed AI agent. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
 
 ![System architecture](../assets/diagrams/system-architecture.svg)
@@ -45,7 +47,7 @@ The architecture separates external source ownership, ephemeral batch compute, v
 | Component | Responsibility | Status |
 |---|---|---|
 | CFPB archive discovery | Find official ZIPs and their labelled month coverage | Live catalog discovery verified |
-| GitHub Actions refresh | Daily check, manual force run, source caching and full retained-window rebuild | Implemented; initial full-data publication acceptance pending |
+| GitHub Actions refresh | Daily check, manual force run, source caching and full retained-window rebuild | Implemented; ON HOLD due to HTTP 403, triggers paused and job disabled |
 | DuckDB + dbt | Bronze identity, typed staging, eight silver tables, wide gold and parallel star schema | Implemented; 21 models and 126 tests pass on synthetic refresh fixtures |
 | Publication gate | Reconcile four datasets, create release branch, PR and merge commit | Implemented; merge depends on repository permissions and branch rules |
 | Streamlit Community Cloud | Serve filters, charts, comparisons and downloads | Live six-tab dashboard |
@@ -54,7 +56,7 @@ The architecture separates external source ownership, ephemeral batch compute, v
 
 ## Refresh lifecycle
 
-The scheduler checks at 11:23 UTC daily, or on an authorized manual run. Official archive URLs, byte hashes, retention boundaries and transformation code determine a release revision. Conditional HTTP requests reuse verified ZIPs where supported. Unchanged revisions skip the build and publication.
+When the hold is lifted, the designed scheduler cadence is 11:23 UTC daily, or an authorized manual run. Official archive URLs, byte hashes, retention boundaries and transformation code determine a release revision. Conditional HTTP requests reuse verified ZIPs where supported. Unchanged revisions skip the build and publication.
 
 A changed revision starts from a fresh retained-window database. The first implementation performs a complete rebuild, not incremental warehouse merges. Provenance survives ingestion. Overlapping complaint IDs resolve by higher numeric source release priority. dbt materializes staging, silver, wide gold and star models and runs the data tests. Four independent aggregate grains are then exported and their additive flags reconciled to wide gold.
 

@@ -1,5 +1,7 @@
 # Complaint analytics dashboard
 
+> **Refresh ON HOLD (2026-10-05):** CFPB HTTP 403 access errors prevent updates. Automatic triggers are paused and the release job is disabled until verified access and explicit resumption. See the [hold notice](../docs/automated-refresh.md).
+
 Run from the repository root:
 
 ```bash

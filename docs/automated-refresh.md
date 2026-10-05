@@ -4,7 +4,11 @@ The live Colab notebook `01_CFPB_Data_Exploration.ipynb` was read on 2026-10-05.
 
 ## Schedule and activation
 
-`.github/workflows/data-refresh.yml` checks daily at **11:23 UTC** (06:23 Central daylight time; 05:23 Central standard time). Adding this workflow to main triggers an initial run. GitHub Actions also offers **Run workflow** with a force option. No Drive credentials or LLM/API subscription is used. Source archives are public; repository publication uses the workflow's repository-scoped token. Repository settings must permit Actions and contents writes; protected-branch rules can block publication.
+**ON HOLD as of 2026-10-05.** Scheduled and push triggers have been removed from `.github/workflows/data-refresh.yml`, and the refresh job has an explicit false condition, so manual dispatch cannot ingest or publish while the hold remains. The current dashboard snapshot is preserved. The access diagnostic workflow is manual-only; it does not refresh data.
+
+The intended cadence after resumption is daily at **11:23 UTC** (06:23 Central daylight time; 05:23 Central standard time). Resumption requires verified CFPB access, an explicit decision to lift the hold, and a reviewed PR that removes the job hold and restores the intended triggers. The error disappearing does not automatically re-enable the pipeline. No Drive credentials or LLM/API subscription is used by the existing archive implementation. Repository rules still govern publication.
+
+![Screenshot of the preserved HTTP 403 evidence](../assets/screenshots/cfpb-403-access-denied.jpg)
 
 ## Publication contract
 

@@ -1,5 +1,7 @@
 # Low-Level Design (LLD)
 
+> **Refresh ON HOLD (2026-10-05):** CFPB HTTP 403 access errors prevent updates. Automatic triggers are paused and the release job is disabled until verified access and explicit resumption. See the [hold notice](../docs/automated-refresh.md).
+
 **Engineering view:** automated source discovery, rolling retention, physical schemas, export contracts and PR-based publication.
 
 ![Technical design diagram](../assets/diagrams/low-level-contracts.svg)
