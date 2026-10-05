@@ -313,7 +313,7 @@ p.card(
     130,
     "Refresh orchestration",
     "WORKFLOW / GITHUB ACTIONS",
-    ["Daily 11:23 UTC + manual force run"],
+    ["ON HOLD; daily trigger disabled"],
     "clock",
 )
 p.card(
@@ -480,7 +480,7 @@ p.note(
     67,
     "CURRENT STATUS",
     [
-        "Live dashboard uses the historical Nov 2022–Aug 2026 snapshot. First hosted ZIP download returned HTTP 403; rolling publication is blocked."
+        "REFRESH ON HOLD — HTTP 403. Triggers paused; release job disabled. Dashboard retains the validated Nov 2022–Aug 2026 snapshot."
     ],
     RED,
 )
@@ -789,7 +789,7 @@ model_page.note(
     165,
     "TRIGGER / PRECONDITIONS",
     [
-        "Daily scheduler or manual force",
+        "ON HOLD; triggers disabled",
         "Validate catalogue coverage",
         "Check available runner disk",
         "HTTP 403 currently blocks ZIP fetch",

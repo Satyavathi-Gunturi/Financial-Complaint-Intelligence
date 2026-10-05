@@ -1,5 +1,12 @@
 # Financial Complaint Intelligence
 
+> [!WARNING]
+> **Data updates and refresh are ON HOLD — HTTP 403 (2026-10-05).** CFPB archive and API requests from the GitHub runner returned Akamai **Access Denied** responses. Scheduled and automatic refresh triggers are paused, and the refresh job is disabled. The dashboard continues to serve the existing validated snapshot. Updates will resume only after access is restored, verified, and the hold is explicitly lifted.
+
+![Screenshot of the preserved GitHub HTTP 403 diagnostic evidence](assets/screenshots/cfpb-403-access-denied.jpg)
+
+*Screenshot of the actual GitHub diagnostic report. [Investigation and evidence](docs/cfpb-access-diagnostics.md).*
+
 A CFPB complaint analytics platform with a six-tab executive dashboard, a tested rolling-refresh implementation, and a planned evidence-backed AI agent.
 
 ## Problem statement
@@ -24,7 +31,7 @@ The intended decisions are which complaint categories need investigation, where 
 
 **Live dashboard:** [Streamlit analytics](dashboard/README.md) with six tabs, shared date/company/product filters, issue drilldown, response outcomes, state mapping and channel comparisons. Four independently reconciled aggregate datasets supply these views.
 
-**Implemented refresh code:** daily archive discovery, source hashing and cached downloads, rolling 36-month rebuilds, dbt validation and four-export reconciliation. Publication uses a release branch → PR → merge commit; first full-data rolling publication is blocked by a source-download HTTP 403.
+**Implemented refresh code (ON HOLD):** daily archive discovery, source hashing and cached downloads, rolling 36-month rebuilds, dbt validation and four-export reconciliation. Publication uses a release branch → PR → merge commit; first full-data rolling publication is blocked by a source-download HTTP 403.
 
 **Planned AI work:** permanent detailed-data hosting, read-only SQL agent, semantic narrative retrieval, LLM integration and agent evaluation. The live dashboard is analytics; there is no deployed LLM agent yet.
 
@@ -69,7 +76,7 @@ The packaged project passed a synthetic smoke build: **21 models and 126 dbt dat
 
 ## Automated refresh
 
-The [scheduled refresh pipeline](docs/automated-refresh.md) checks public CFPB archives daily and stages a validated rolling 36-month release on source or transformation changes. It rebuilds all dbt layers and publishes the four dashboard exports together through a release branch, PR and merge commit. First full-data runner publication must pass before the historical dashboard snapshot is replaced. The window is anchored to the latest archive-labelled month, not the wall clock. The live Colab notebook remains the interactive development workflow.
+The [refresh pipeline](docs/automated-refresh.md) is currently paused. When re-enabled, it is designed to check public CFPB archives daily and stage a validated rolling 36-month release on source or transformation changes. It rebuilds all dbt layers and publishes the four dashboard exports together through a release branch, PR and merge commit. First full-data runner publication must pass before the historical dashboard snapshot is replaced. The window is anchored to the latest archive-labelled month, not the wall clock. The live Colab notebook remains the interactive development workflow.
 
 ## Get started
 Use [the reproduction guide](docs/reproduction.md) to run entirely in Colab or run the extracted dbt project against existing bronze Parquet. Versions observed in the successful Colab environment are pinned in `requirements.txt`.
