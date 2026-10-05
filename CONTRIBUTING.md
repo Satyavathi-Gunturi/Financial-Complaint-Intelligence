@@ -19,3 +19,7 @@ python scripts/smoke_test.py
 The notebook is a documented historical Colab workflow. The extracted dbt files are the maintained SQL implementation; notebook generators can regenerate the original, less-formatted SQL. Keep outputs and widget metadata cleared before publishing. Never publish private runtime profiles, credentials or large data.
 
 Use small commits explaining the problem and behavior. Update design/metric documentation when behavior changes. Preserve both wide gold and star structures until comparative agent evaluation is complete. Describe full-data Colab results separately from synthetic smoke tests.
+
+## Branch and pull request workflow
+
+Create a descriptive feature or fix branch from current main. Commit changes to that branch, open a pull request with validation evidence, and merge using a merge commit after checks pass. Do not push implementation or dataset changes directly to main. Scheduled data releases follow the same branch → PR → merge flow. Preserve existing history; do not rewrite earlier direct commits to simulate PRs.
