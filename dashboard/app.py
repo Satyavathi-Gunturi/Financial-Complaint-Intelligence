@@ -190,14 +190,106 @@ st.plotly_chart(
             labels={"period": "Received period", "complaints": "Complaints"},
             color_discrete_sequence=["#147d83"],
         )
-    ).update_traces(line_width=2.5, fillcolor="rgba(20,125,131,.09)", marker_size=5),
+    ).update_traces(
+        line_width=2.5,
+        fillcolor="rgba(20,125,131,.09)",
+        marker_size=5,
+        hovertemplate="<b>%{x|%d %b %Y}</b><br>Complaints: %{y:,.0f}<extra></extra>",
+    ),
     width="stretch",
 )
 st.caption(
     "First and last buckets may cover partial periods. A missing bucket has no matching complaints; published narratives are available only for a subset of records."
 )
 
-st.subheader("02 / Where complaints concentrate")
+st.subheader("02 / Monthly response timeliness")
+monthly = query(
+    "SELECT CAST(date_trunc('month', date_received) AS DATE) AS month, "
+    "SUM(timely_response_count) AS timely, SUM(known_timeliness_count) AS known, "
+    "SUM(not_timely_response_count) AS not_timely, "
+    "SUM(unknown_timeliness_count) AS unknown, SUM(complaint_count) AS complaints "
+    "FROM metrics" + where + " GROUP BY 1 ORDER BY 1",
+    params,
+)
+monthly["rate_pct"] = (
+    100 * monthly["timely"] / monthly["known"].replace(0, float("nan"))
+)
+# Explicit calendar gaps prevent implying observations in months without records.
+calendar = pd.date_range(
+    pd.Timestamp(dates[0]).to_period("M").start_time,
+    pd.Timestamp(dates[1]).to_period("M").start_time,
+    freq="MS",
+)
+monthly = (
+    monthly.set_index("month").reindex(calendar).rename_axis("month").reset_index()
+)
+monthly["period_note"] = monthly["month"].map(
+    lambda month: (
+        "Partial month"
+        if month.date() < dates[0] or (month + pd.offsets.MonthEnd(0)).date() > dates[1]
+        else "Full month"
+    )
+)
+rate_fig = style_chart(
+    px.line(
+        monthly,
+        x="month",
+        y="rate_pct",
+        markers=True,
+        custom_data=["timely", "known", "not_timely", "unknown", "period_note"],
+        labels={
+            "month": "Complaint received month",
+            "rate_pct": "Timely response rate (%)",
+        },
+        color_discrete_sequence=["#294e73"],
+    )
+)
+rate_fig.update_traces(
+    line_width=2.5,
+    marker_size=6,
+    connectgaps=False,
+    hovertemplate="<b>%{x|%b %Y}</b><br>Timely response rate: %{y:.2f}%"
+    "<br>Timely responses: %{customdata[0]:,.0f}"
+    "<br>Known timeliness: %{customdata[1]:,.0f}"
+    "<br>Not timely: %{customdata[2]:,.0f}"
+    "<br>Unknown timeliness: %{customdata[3]:,.0f}"
+    "<br>%{customdata[4]}<extra></extra>",
+)
+rate_fig.update_yaxes(range=[0, 100.5], ticksuffix="%")
+valid_rates = monthly.dropna(subset=["rate_pct"])
+if not valid_rates.empty:
+    latest = valid_rates.iloc[-1]
+    rate_fig.add_annotation(
+        x=latest["month"],
+        y=latest["rate_pct"],
+        text=f"{latest['rate_pct']:.2f}%",
+        showarrow=False,
+        yshift=-22,
+        xanchor="right",
+        font=dict(color="#294e73", size=12),
+    )
+st.plotly_chart(rate_fig, width="stretch")
+st.caption(
+    "Monthly rates use timely responses ÷ known timeliness, grouped by complaint received month. The axis shows 0–100%; hover for exact rates and counts. Partial months are identified in tooltips; missing or zero-denominator months have no rate."
+)
+with st.expander("Monthly timeliness data"):
+    st.dataframe(
+        monthly,
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "month": st.column_config.DateColumn("Received month", format="MMM YYYY"),
+            "rate_pct": st.column_config.NumberColumn("Timely rate (%)", format="%.2f"),
+        },
+    )
+    st.download_button(
+        "Download monthly timeliness CSV",
+        monthly.to_csv(index=False),
+        "monthly_timeliness.csv",
+        "text/csv",
+    )
+
+st.subheader("03 / Where complaints concentrate")
 left, right = st.columns(2)
 for column, label, container in [
     ("company_name", "Companies", left),
@@ -223,11 +315,19 @@ for column, label, container in [
                     y="display_label",
                     orientation="h",
                     labels={"display_label": "", "complaints": "Complaints"},
-                    hover_name="category",
+                    custom_data=["category"],
+                    text="complaints",
                     color_discrete_sequence=["#294e73"],
                 ),
                 height=400,
-            ),
+            )
+            .update_traces(
+                texttemplate="%{x:,.0f}",
+                textposition="outside",
+                cliponaxis=False,
+                hovertemplate="<b>%{customdata[0]}</b><br>Complaints: %{x:,.0f}<extra></extra>",
+            )
+            .update_layout(margin=dict(l=20, r=90, t=30, b=35)),
             width="stretch",
         )
 
@@ -251,7 +351,8 @@ outcome_rows.append(
     )
 )
 outcome_frame = pd.DataFrame(outcome_rows, columns=["Recorded outcome", "Complaints"])
-st.subheader("03 / Recorded response outcomes")
+outcome_frame["share_pct"] = 100 * outcome_frame["Complaints"] / totals["complaints"]
+st.subheader("04 / Recorded response outcomes")
 st.plotly_chart(
     style_chart(
         px.bar(
@@ -261,9 +362,18 @@ st.plotly_chart(
             orientation="h",
             color_discrete_sequence=["#147d83"],
             labels={"Recorded outcome": ""},
+            custom_data=["share_pct"],
+            text="Complaints",
         ),
         height=340,
-    ),
+    )
+    .update_traces(
+        texttemplate="%{x:,.0f}",
+        textposition="outside",
+        cliponaxis=False,
+        hovertemplate="<b>%{y}</b><br>Complaints: %{x:,.0f}<br>Share: %{customdata[0]:.2f}%<extra></extra>",
+    )
+    .update_layout(margin=dict(l=20, r=90, t=30, b=35)),
     width="stretch",
 )
 st.caption(
