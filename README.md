@@ -24,7 +24,7 @@ The intended decisions are which complaint categories need investigation, where 
 
 **Live dashboard:** [Streamlit analytics](dashboard/README.md) with six tabs, shared date/company/product filters, issue drilldown, response outcomes, state mapping and channel comparisons. Four independently reconciled aggregate datasets supply these views.
 
-**Implemented refresh code:** daily archive discovery, source hashing and cached downloads, rolling 36-month rebuilds, dbt validation and four-export reconciliation. Publication uses a release branch → PR → merge commit; first full-data rolling publication is pending acceptance.
+**Implemented refresh code:** daily archive discovery, source hashing and cached downloads, rolling 36-month rebuilds, dbt validation and four-export reconciliation. Publication uses a release branch → PR → merge commit; first full-data rolling publication is blocked by a source-download HTTP 403.
 
 **Planned AI work:** permanent detailed-data hosting, read-only SQL agent, semantic narrative retrieval, LLM integration and agent evaluation. The live dashboard is analytics; there is no deployed LLM agent yet.
 
@@ -54,7 +54,7 @@ The automated workflow connects public source discovery to a validated release P
 Downloaded from the official [CFPB Consumer Complaint Database Narratives Archive](https://www.consumerfinance.gov/foia-requests/foia-electronic-reading-room/cfpb-consumer-complaint-database-narratives-archive/). See the source document for selection rules and the distinction between source-page coverage and observed file dates.
 
 ## Repository contents
-`notebooks/` contains the saved Colab workflow without execution outputs. `dbt/` contains extracted SQL models, tests and definitions. `reports/` contains small observed result files. `scripts/` provides database bootstrap support. Four compact Parquet serving datasets are versioned at the repository root. Large source archives, databases and private runtime configuration are excluded.
+`notebooks/` contains the saved Colab workflow without execution outputs. `dbt/` contains extracted SQL models, tests and definitions. `reports/` contains small observed result files. `scripts/` provides database bootstrap, synthetic model validation and rolling source-to-dashboard refresh. Four compact Parquet serving datasets are versioned at the repository root. Large source archives, databases and private runtime configuration are excluded.
 
 ## Dashboard tabs
 

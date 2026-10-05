@@ -43,6 +43,8 @@ erDiagram
 
 </details>
 
+These cardinalities describe the historical full snapshot, not a future rolling release.
+
 | Table | Verified rows |
 |---|---:|
 | fact_complaints | 14,482,997 |
