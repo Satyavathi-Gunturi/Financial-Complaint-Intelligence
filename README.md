@@ -52,6 +52,7 @@ The architecture draw.io file includes platform and deployment/operations pages;
 - [Data quality and build results](docs/data-quality-results.md)
 - [Reproduction guide](docs/reproduction.md)
 - [Agent evaluation plan](docs/evaluation-plan.md)
+- [CFPB access investigation](docs/cfpb-access-diagnostics.md)
 
 ## Source
 Downloaded from the official [CFPB Consumer Complaint Database Narratives Archive](https://www.consumerfinance.gov/foia-requests/foia-electronic-reading-room/cfpb-consumer-complaint-database-narratives-archive/). See the source document for selection rules and the distinction between source-page coverage and observed file dates.
