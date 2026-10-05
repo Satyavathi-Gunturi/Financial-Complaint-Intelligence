@@ -22,7 +22,9 @@ The intended decisions are which complaint categories need investigation, where 
 ## Implemented and planned
 **Implemented in Colab:** chunked CSV ingestion, bronze Parquet with provenance, profiling, dbt staging and silver, complaint-level wide gold with metric flags, an additional gold star schema, reconciliation tests and Drive checkpoints. The saved notebook includes successful builds; [validation results](docs/data-quality-results.md) record their observed counts.
 
-**Planned:** permanent data hosting, dashboard, read-only SQL agent, semantic narrative retrieval, LLM integration, evaluation of both query structures, application deployment and production monitoring. There is no live AI app yet.
+**Implemented dashboard code:** [Streamlit analytics](dashboard/README.md) with date/company/product filters, trends, response outcomes and narrative coverage, using the reconciled 7.55 MB aggregate snapshot. Deployment is pending.
+
+**Planned:** permanent detailed-data hosting, read-only SQL agent, semantic narrative retrieval, LLM integration, evaluation of both query structures, application deployment and production monitoring. There is no live AI app yet.
 
 ## Architecture
 This project combines **medallion architecture** with **two gold query structures**. Silver is shared; wide gold remains available alongside the additional star schema. The star models reuse the existing gold metric definitions rather than replacing them.
