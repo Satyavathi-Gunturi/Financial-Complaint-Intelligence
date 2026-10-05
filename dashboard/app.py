@@ -1,5 +1,6 @@
 """Explore the validated CFPB daily company/product complaint snapshot."""
 
+from numbers import Real
 from pathlib import Path
 
 import duckdb
@@ -25,6 +26,21 @@ def query(sql, params=()):
 def rate(numerator, denominator):
     """Preserve unknown rates when no eligible denominator exists."""
     return f"{100 * numerator / denominator:.2f}%" if denominator else "N/A"
+
+
+def compact(value):
+    """Format counts using consistent leadership-facing K/M/B notation."""
+    value = float(value)
+    if abs(value) >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f} B"
+    if abs(value) >= 1_000_000:
+        return f"{value / 1_000_000:.2f} M"
+    if abs(value) >= 1_000:
+        rounded = round(value / 1_000)
+        if rounded >= 1000:
+            return f"{value / 1_000_000:.2f} M"
+        return f"{rounded:.0f}K"
+    return f"{value:.0f}"
 
 
 st.markdown(
@@ -78,6 +94,25 @@ def style_chart(fig, height=340):
     )
     fig.update_xaxes(showgrid=False, zeroline=False)
     fig.update_yaxes(gridcolor="#edf1f5", zeroline=False)
+    for axis in ("x", "y"):
+        values = [
+            v
+            for trace in fig.data
+            for v in getattr(trace, axis, [])
+            if isinstance(v, Real)
+        ]
+        if values and max(values) > 0:
+            maximum = max(values)
+            ticks = [maximum * i / 4 for i in range(5)]
+            fig.update_layout(
+                **{
+                    f"{axis}axis": dict(
+                        tickmode="array",
+                        tickvals=ticks,
+                        ticktext=[compact(v) for v in ticks],
+                    )
+                }
+            )
     return fig
 
 
@@ -165,12 +200,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 cards = st.columns(4)
-cards[0].metric("Complaints", f"{int(totals['complaints']):,}")
+cards[0].metric("Complaints", compact(totals["complaints"]))
 cards[1].metric("Timely response rate", rate(totals["timely"], totals["known"]))
 cards[2].metric("Narrative coverage", rate(totals["narratives"], totals["complaints"]))
-cards[3].metric("Published narratives", f"{int(totals['narratives']):,}")
+cards[3].metric("Published narratives", compact(totals["narratives"]))
 st.caption(
-    f"Timeliness denominator: {int(totals['known']):,} known records · Unknown timeliness: {int(totals['unknown']):,}. Rates are calculated after aggregation."
+    f"Timeliness denominator: {compact(totals['known'])} known records · Unknown timeliness: {compact(totals['unknown'])}. Rates are calculated after aggregation."
 )
 
 trend = query(
@@ -179,6 +214,7 @@ trend = query(
     + " GROUP BY 1 ORDER BY 1",
     params,
 )
+trend["count_label"] = trend["complaints"].map(compact)
 st.subheader("01 / Complaint demand")
 st.plotly_chart(
     style_chart(
@@ -187,6 +223,7 @@ st.plotly_chart(
             x="period",
             y="complaints",
             markers=True,
+            custom_data=["count_label"],
             labels={"period": "Received period", "complaints": "Complaints"},
             color_discrete_sequence=["#147d83"],
         )
@@ -194,7 +231,7 @@ st.plotly_chart(
         line_width=2.5,
         fillcolor="rgba(20,125,131,.09)",
         marker_size=5,
-        hovertemplate="<b>%{x|%d %b %Y}</b><br>Complaints: %{y:,.0f}<extra></extra>",
+        hovertemplate="<b>%{x|%d %b %Y}</b><br>Complaints: %{customdata[0]}<extra></extra>",
     ),
     width="stretch",
 )
@@ -202,94 +239,7 @@ st.caption(
     "First and last buckets may cover partial periods. A missing bucket has no matching complaints; published narratives are available only for a subset of records."
 )
 
-st.subheader("02 / Monthly response timeliness")
-monthly = query(
-    "SELECT CAST(date_trunc('month', date_received) AS DATE) AS month, "
-    "SUM(timely_response_count) AS timely, SUM(known_timeliness_count) AS known, "
-    "SUM(not_timely_response_count) AS not_timely, "
-    "SUM(unknown_timeliness_count) AS unknown, SUM(complaint_count) AS complaints "
-    "FROM metrics" + where + " GROUP BY 1 ORDER BY 1",
-    params,
-)
-monthly["rate_pct"] = (
-    100 * monthly["timely"] / monthly["known"].replace(0, float("nan"))
-)
-# Explicit calendar gaps prevent implying observations in months without records.
-calendar = pd.date_range(
-    pd.Timestamp(dates[0]).to_period("M").start_time,
-    pd.Timestamp(dates[1]).to_period("M").start_time,
-    freq="MS",
-)
-monthly = (
-    monthly.set_index("month").reindex(calendar).rename_axis("month").reset_index()
-)
-monthly["period_note"] = monthly["month"].map(
-    lambda month: (
-        "Partial month"
-        if month.date() < dates[0] or (month + pd.offsets.MonthEnd(0)).date() > dates[1]
-        else "Full month"
-    )
-)
-rate_fig = style_chart(
-    px.line(
-        monthly,
-        x="month",
-        y="rate_pct",
-        markers=True,
-        custom_data=["timely", "known", "not_timely", "unknown", "period_note"],
-        labels={
-            "month": "Complaint received month",
-            "rate_pct": "Timely response rate (%)",
-        },
-        color_discrete_sequence=["#294e73"],
-    )
-)
-rate_fig.update_traces(
-    line_width=2.5,
-    marker_size=6,
-    connectgaps=False,
-    hovertemplate="<b>%{x|%b %Y}</b><br>Timely response rate: %{y:.2f}%"
-    "<br>Timely responses: %{customdata[0]:,.0f}"
-    "<br>Known timeliness: %{customdata[1]:,.0f}"
-    "<br>Not timely: %{customdata[2]:,.0f}"
-    "<br>Unknown timeliness: %{customdata[3]:,.0f}"
-    "<br>%{customdata[4]}<extra></extra>",
-)
-rate_fig.update_yaxes(range=[0, 100.5], ticksuffix="%")
-valid_rates = monthly.dropna(subset=["rate_pct"])
-if not valid_rates.empty:
-    latest = valid_rates.iloc[-1]
-    rate_fig.add_annotation(
-        x=latest["month"],
-        y=latest["rate_pct"],
-        text=f"{latest['rate_pct']:.2f}%",
-        showarrow=False,
-        yshift=-22,
-        xanchor="right",
-        font=dict(color="#294e73", size=12),
-    )
-st.plotly_chart(rate_fig, width="stretch")
-st.caption(
-    "Monthly rates use timely responses ÷ known timeliness, grouped by complaint received month. The axis shows 0–100%; hover for exact rates and counts. Partial months are identified in tooltips; missing or zero-denominator months have no rate."
-)
-with st.expander("Monthly timeliness data"):
-    st.dataframe(
-        monthly,
-        hide_index=True,
-        width="stretch",
-        column_config={
-            "month": st.column_config.DateColumn("Received month", format="MMM YYYY"),
-            "rate_pct": st.column_config.NumberColumn("Timely rate (%)", format="%.2f"),
-        },
-    )
-    st.download_button(
-        "Download monthly timeliness CSV",
-        monthly.to_csv(index=False),
-        "monthly_timeliness.csv",
-        "text/csv",
-    )
-
-st.subheader("03 / Where complaints concentrate")
+st.subheader("02 / Where complaints concentrate")
 left, right = st.columns(2)
 for column, label, container in [
     ("company_name", "Companies", left),
@@ -301,6 +251,7 @@ for column, label, container in [
         + " GROUP BY 1 ORDER BY complaints DESC, category LIMIT 10",
         params,
     )
+    ranked["count_label"] = ranked["complaints"].map(compact)
     with container:
         st.markdown(f"**Top 10 {label.lower()}**")
         st.plotly_chart(
@@ -315,17 +266,17 @@ for column, label, container in [
                     y="display_label",
                     orientation="h",
                     labels={"display_label": "", "complaints": "Complaints"},
-                    custom_data=["category"],
-                    text="complaints",
+                    custom_data=["category", "count_label"],
+                    text="count_label",
                     color_discrete_sequence=["#294e73"],
                 ),
                 height=400,
             )
             .update_traces(
-                texttemplate="%{x:,.0f}",
+                texttemplate="%{text}",
                 textposition="outside",
                 cliponaxis=False,
-                hovertemplate="<b>%{customdata[0]}</b><br>Complaints: %{x:,.0f}<extra></extra>",
+                hovertemplate="<b>%{customdata[0]}</b><br>Complaints: %{customdata[1]}<extra></extra>",
             )
             .update_layout(margin=dict(l=20, r=90, t=30, b=35)),
             width="stretch",
@@ -352,7 +303,8 @@ outcome_rows.append(
 )
 outcome_frame = pd.DataFrame(outcome_rows, columns=["Recorded outcome", "Complaints"])
 outcome_frame["share_pct"] = 100 * outcome_frame["Complaints"] / totals["complaints"]
-st.subheader("04 / Recorded response outcomes")
+outcome_frame["count_label"] = outcome_frame["Complaints"].map(compact)
+st.subheader("03 / Recorded response outcomes")
 st.plotly_chart(
     style_chart(
         px.bar(
@@ -362,16 +314,16 @@ st.plotly_chart(
             orientation="h",
             color_discrete_sequence=["#147d83"],
             labels={"Recorded outcome": ""},
-            custom_data=["share_pct"],
-            text="Complaints",
+            custom_data=["share_pct", "count_label"],
+            text="count_label",
         ),
         height=340,
     )
     .update_traces(
-        texttemplate="%{x:,.0f}",
+        texttemplate="%{text}",
         textposition="outside",
         cliponaxis=False,
-        hovertemplate="<b>%{y}</b><br>Complaints: %{x:,.0f}<br>Share: %{customdata[0]:.2f}%<extra></extra>",
+        hovertemplate="<b>%{y}</b><br>Complaints: %{customdata[1]}<br>Share: %{customdata[0]:.2f}%<extra></extra>",
     )
     .update_layout(margin=dict(l=20, r=90, t=30, b=35)),
     width="stretch",
@@ -380,12 +332,18 @@ st.caption(
     "Outcome categories reflect the export snapshot. They do not measure customer satisfaction, relief amounts, or current resolution status."
 )
 with st.expander("Trend data and definitions"):
-    st.dataframe(trend, hide_index=True, width="stretch")
+    display_trend = trend[["period", "complaints", "narratives"]].copy()
+    for column in ["complaints", "narratives"]:
+        display_trend[column] = display_trend[column].map(compact)
+    st.dataframe(display_trend, hide_index=True, width="stretch")
     st.download_button(
         "Download filtered trend CSV",
-        trend.to_csv(index=False),
+        trend[["period", "complaints", "narratives"]].to_csv(index=False),
         "complaint_trend.csv",
         "text/csv",
+    )
+    st.caption(
+        "Count notation: K = thousand; M = million; B = billion. Display values are rounded; CSV downloads retain exact counts."
     )
     st.markdown(
         "**Timely response rate:** timely response count ÷ known timeliness count. **Narrative coverage:** published narrative count ÷ complaint count. This aggregate supports date, company and product exploration. Issue, state, individual narrative retrieval and AI chat are not included in this dashboard."
