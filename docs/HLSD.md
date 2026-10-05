@@ -1,10 +1,44 @@
 # High-Level System Design (HLSD)
 
-The system prepares public CFPB complaint data for a six-tab leadership dashboard and a future evidence-backed AI agent. The scheduled refresh implementation replaces manual dataset uploads; Colab remains the interactive development and recovery environment.
+The system prepares public CFPB complaint data for a six-tab leadership dashboard and a future evidence-backed AI agent. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
 
 ![System architecture](../assets/diagrams/system-architecture.svg)
 
 [Editable draw.io architecture](../assets/diagrams/system-architecture.drawio) · [Refresh operation guide](automated-refresh.md) · [Low-Level Design](LLD.md)
+
+## View catalogue
+
+| Draw.io page | Audience | Design questions |
+|---|---|---|
+| HLSD 01 — Platform architecture | Leadership and architects | What are the source, system boundaries, processing and consumption responsibilities? |
+| HLSD 02 — Deployment & operations | Platform engineers and operators | Where does each component execute, what persists, and what limits publication? |
+
+![Deployment and operations](../assets/diagrams/deployment-operations.svg)
+
+The architecture separates external source ownership, ephemeral batch compute, versioned releases, public dashboard serving and future AI. Technologies and relationship labels are explicit. Filled icons identify component types; dashed planned boundaries do not imply deployed capabilities. See [design guidance and review criteria](design-guidelines.md).
+
+## Requirements and nonfunctional design
+
+| Concern | Current requirement / design | Acceptance or limitation |
+|---|---|---|
+| Business scope | Complaint trends, concentrations, response outcomes and narrative availability | Six dashboard tabs; no inferred internal root causes |
+| Data lifecycle | Latest archive-labelled 36 calendar months by received date | Not yet applied to serving data; first full rolling release blocked |
+| Correctness | Complaint grain and shared additive metric definitions | dbt tests plus four-export sum reconciliation |
+| Reliability | Stage and validate before PR-based release | Last published revision survives failed processing or blocked merge |
+| Security | Official HTTPS sources; scoped workflow write permissions | No Drive credentials; repository permissions govern release writes |
+| Performance | Chunked ingestion; separate compact serving aggregates | Runner and Streamlit limits apply; no measured latency target is claimed |
+| Recovery | Git history for serving releases; separate manual Drive checkpoint | No automated disaster-recovery or RPO/RTO commitment |
+| Freshness | Daily source check at 11:23 UTC | Source timing and scheduler delays prevent a freshness SLA |
+
+## Architecture decisions
+
+| Decision | Reason | Trade-off |
+|---|---|---|
+| Full retained-window rebuild | Replays changed sources and models with deterministic complaint identity | Greater runtime and disk use than incremental ingestion |
+| DuckDB + dbt batch processing | Reviewable SQL, tests and a low-service-count development path | Temporary runner DB cannot serve a persistent AI query endpoint |
+| Wide and star gold in parallel | Reuse metric definitions and support future representation evaluation | Star depends on wide gold; not independent metric calculation |
+| Four serving grains | Keep leadership queries compact without aggregate join multiplication | No row-level complaint text in serving files |
+| Branch → PR → merge commit | Preserve review and publication history | Required repository rules may leave release PRs pending |
 
 ## Components and current status
 

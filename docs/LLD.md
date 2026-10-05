@@ -8,6 +8,20 @@
 
 ---
 
+## View catalogue
+
+| Draw.io page | Engineering detail | Source of truth |
+|---|---|---|
+| LLD 01 — Source-to-model contracts | Hash identity, retention, raw fields, staging, silver and parallel gold | `scripts/refresh_pipeline.py` and `dbt/models/` |
+| LLD 02 — Gold-to-dashboard contracts | Four grains, manifest, metric algebra and independent query/cache contracts | Export definitions and `dashboard/app.py` |
+| LLD 03 — Release lifecycle & failure handling | Changed/unchanged revisions, gates, abort, pending PR and merge | `.github/workflows/data-refresh.yml` |
+
+![Serving data contracts](../assets/diagrams/serving-contracts.svg)
+
+![Release lifecycle](../assets/diagrams/release-lifecycle.svg)
+
+The editable draw.io file contains all three pages. Related [silver ER](silver-er-diagram.md) and [star schema](gold-star-schema.md) diagrams supply detailed logical keys and cardinality. This is an implementation-specific design, with explicit current limitations rather than an assumed cloud target. See [design guidance](design-guidelines.md).
+
 ## Engineering invariants
 
 | Invariant | Design rule | Validation |
@@ -23,7 +37,7 @@
 ## Physical schemas
 | Schema | Objects |
 |---|---|
-| `main` | `bronze_complaints` view over selected Parquet parts |
+| `main` | Historical Colab: `bronze_complaints` view over selected Parquet; scheduled runner: retained, deduplicated `bronze_complaints` base table |
 | `main_staging` | cleaned complaint view, keyed view and split-tag view |
 | `main_silver` | eight materialized relational tables |
 | `main_gold` | materialized `complaint_metrics`, narrative search view |
@@ -92,3 +106,19 @@ Large temporary bronze and DuckDB data are not uploaded. Build logs/results/mani
 
 
 Current full-run blocker (2026-10-05): GitHub-hosted execution successfully discovered the archive catalogue and passed synthetic dbt validation, but its first source ZIP request returned HTTP 403. No refreshed datasets were published. Unattended full-data ingestion requires an allowed download path or execution environment; it is not yet operational. Existing dashboard datasets remain unchanged.
+
+## Interface and failure matrix
+
+| Boundary | Input / output | Rejection behavior |
+|---|---|---|
+| Catalogue discovery | Official HTML → recognized archive URLs and month ranges | Unknown filename, host or missing month aborts |
+| Source acquisition | ZIP bytes → completed cache file + SHA-256 / validators | HTTP or incomplete download aborts; partial file not promoted |
+| CSV ingestion | Required 16-field strings → retained complaint records with provenance | Missing fields, invalid received dates or empty IDs abort |
+| Complaint identity | Trimmed complaint ID + release / record priority → one winning record | Deterministic precedence; overlap count reported |
+| dbt build | Bronze → staging, silver, wide gold and star | Failed model or assertion blocks exports / publication |
+| Export contract | Wide gold → four aggregates with identical 18 flag sums | Total mismatch or file ≥ 90 MiB rejects release |
+| Repository release | Staged files + manifest → release branch, PR, merge commit | Failure or branch rules preserve current main revision |
+| Dashboard read | Independent file + filters + version → query results | No cross-grain joins; aggregate rates use documented denominators |
+
+## Replay and acceptance
+A changed revision rebuilds from a fresh database; an unchanged revision skips processing unless forced. Source caching accelerates a rebuild but is not durable raw preservation. Run the synthetic model and refresh integration checks described in the reproduction guide. Accept the first real rolling release only after source downloads, retained-window build, full tests, all exports and PR merge succeed. The currently observed HTTP 403 fails that acceptance; synthetic success does not override it.

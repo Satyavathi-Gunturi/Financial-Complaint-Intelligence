@@ -35,6 +35,8 @@ The automated workflow connects public source discovery to a validated release P
 
 ![Financial Complaint Intelligence architecture](assets/diagrams/system-architecture.svg)
 
+The architecture draw.io file includes platform and deployment/operations pages; the LLD file adds processing, serving contracts and release lifecycle views.
+
 [View full-size diagram](assets/diagrams/system-architecture.svg) · [Download editable draw.io file](assets/diagrams/system-architecture.drawio) · [High-Level System Design](docs/HLSD.md)
 
 ## Documentation
@@ -43,6 +45,7 @@ The automated workflow connects public source discovery to a validated release P
 - [Data sources and selection](docs/data-sources.md)
 - [High-Level System Design](docs/HLSD.md)
 - [Low-Level Design](docs/LLD.md)
+- [Architecture design guidance and view conventions](docs/design-guidelines.md)
 - [Silver ER diagram](docs/silver-er-diagram.md)
 - [Gold star schema](docs/gold-star-schema.md)
 - [Metric definitions](docs/metric-definitions.md)
