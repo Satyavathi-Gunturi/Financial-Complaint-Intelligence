@@ -8,6 +8,7 @@ app = AppTest.from_file(
     str(Path(__file__).with_name("app.py")), default_timeout=60
 ).run()
 assert not app.exception, app.exception
+assert len(app.tabs) == 6
 assert app.metric[0].value == "14.48 M"
 assert app.metric[3].value == "2.71 M"
 assert app.metric[1].value == "99.59%"

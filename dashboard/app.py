@@ -1,6 +1,5 @@
 """Explore the validated CFPB daily company/product complaint snapshot."""
 
-from numbers import Real
 from pathlib import Path
 
 import duckdb
@@ -8,18 +7,25 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-DATA = Path(__file__).resolve().parents[1] / "dashboard_daily_company_product.parquet"
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / "dashboard_daily_company_product.parquet"
+DATASETS = {
+    "overview": DATA,
+    "issues": ROOT / "dashboard_issues.parquet",
+    "geography": ROOT / "dashboard_geography.parquet",
+    "channels": ROOT / "dashboard_channels.parquet",
+}
 st.set_page_config(
     page_title="Financial Complaint Intelligence", page_icon="◈", layout="wide"
 )
 
 
 @st.cache_data(show_spinner=False)
-def query(sql, params=()):
+def query(sql, params=(), dataset="overview"):
     """Run parameterized analytics on the packaged Parquet snapshot."""
     with duckdb.connect() as con:
         con.execute("SET memory_limit='512MB'")
-        con.read_parquet(str(DATA)).create_view("metrics")
+        con.read_parquet(str(DATASETS[dataset])).create_view("metrics")
         return con.execute(sql, list(params)).fetchdf()
 
 
@@ -91,25 +97,6 @@ def style_chart(fig, height=340):
     )
     fig.update_xaxes(showgrid=False, zeroline=False)
     fig.update_yaxes(gridcolor="#edf1f5", zeroline=False)
-    for axis in ("x", "y"):
-        values = [
-            v
-            for trace in fig.data
-            for v in getattr(trace, axis, [])
-            if isinstance(v, Real)
-        ]
-        if values and max(values) > 0:
-            maximum = max(values)
-            ticks = [maximum * i / 4 for i in range(5)]
-            fig.update_layout(
-                **{
-                    f"{axis}axis": dict(
-                        tickmode="array",
-                        tickvals=ticks,
-                        ticktext=[compact(v) for v in ticks],
-                    )
-                }
-            )
     return fig
 
 
@@ -205,148 +192,426 @@ st.caption(
     f"Timeliness denominator: {compact(totals['known'])} known records · Unknown timeliness: {compact(totals['unknown'])}. Rates are calculated after aggregation."
 )
 
-trend = query(
-    f"SELECT CAST(date_trunc('{grain.lower()}', date_received) AS DATE) AS period, SUM(complaint_count) AS complaints, SUM(narrative_count) AS narratives FROM metrics"
-    + where
-    + " GROUP BY 1 ORDER BY 1",
-    params,
-)
-trend["count_label"] = trend["complaints"].map(compact)
-st.subheader("01 / Complaint demand")
-st.plotly_chart(
-    style_chart(
+
+def count_chart(frame, category, title, color="#294e73", height=400):
+    """Render ranked values with compact labels and full category tooltips."""
+    frame = frame.copy().sort_values("complaints")
+    frame["label"] = frame[category].fillna("Missing label").map(str)
+    frame["short"] = frame["label"].map(lambda v: v if len(v) < 40 else v[:37] + "…")
+    frame["count_label"] = frame["complaints"].map(compact)
+    fig = style_chart(
+        px.bar(
+            frame,
+            x="complaints",
+            y="short",
+            orientation="h",
+            text="count_label",
+            custom_data=["label", "count_label"],
+            labels={"short": "", "complaints": "Complaints"},
+            color_discrete_sequence=[color],
+        ),
+        height,
+    )
+    fig.update_traces(
+        texttemplate="%{text}",
+        textposition="outside",
+        cliponaxis=False,
+        hovertemplate="<b>%{customdata[0]}</b><br>Complaints: %{customdata[1]}<extra></extra>",
+    )
+    maximum = frame["complaints"].max()
+    ticks = [maximum * i / 4 for i in range(5)]
+    fig.update_xaxes(tickvals=ticks, ticktext=[compact(v) for v in ticks])
+    fig.update_layout(margin=dict(l=20, r=80, t=25, b=35))
+    st.markdown(f"**{title}**")
+    st.plotly_chart(fig, width="stretch", key=title)
+
+
+def display_table(frame, counts=()):
+    """Keep on-screen counts compact; exports retain exact values."""
+    display = frame.copy()
+    for col in counts:
+        display[col] = display[col].map(compact)
+    st.dataframe(display, hide_index=True, width="stretch")
+
+
+def rank(column, dataset="overview", extra="", extra_params=(), limit=10):
+    return query(
+        f"SELECT COALESCE({column}, 'Missing label') AS category, "
+        "SUM(complaint_count) AS complaints FROM metrics"
+        + where
+        + extra
+        + f" GROUP BY 1 ORDER BY complaints DESC, category LIMIT {limit}",
+        params + tuple(extra_params),
+        dataset,
+    )
+
+
+def trend_chart(frame, key):
+    frame = frame.copy()
+    frame["count_label"] = frame["complaints"].map(compact)
+    fig = style_chart(
         px.area(
-            trend,
+            frame,
             x="period",
             y="complaints",
             markers=True,
             custom_data=["count_label"],
-            labels={"period": "Received period", "complaints": "Complaints"},
             color_discrete_sequence=["#147d83"],
+            labels={"period": "Received period", "complaints": "Complaints"},
         )
-    ).update_traces(
+    )
+    fig.update_traces(
         line_width=2.5,
-        fillcolor="rgba(20,125,131,.09)",
         marker_size=5,
+        fillcolor="rgba(20,125,131,.09)",
         hovertemplate="<b>%{x|%d %b %Y}</b><br>Complaints: %{customdata[0]}<extra></extra>",
-    ),
-    width="stretch",
-)
-st.caption(
-    "First and last buckets may cover partial periods. A missing bucket has no matching complaints; published narratives are available only for a subset of records."
+    )
+    maximum = frame["complaints"].max()
+    ticks = [maximum * i / 4 for i in range(5)]
+    fig.update_yaxes(tickvals=ticks, ticktext=[compact(v) for v in ticks])
+    st.plotly_chart(fig, width="stretch", key=key)
+
+
+trend = query(
+    f"SELECT CAST(date_trunc('{grain.lower()}', date_received) AS DATE) AS period, "
+    "SUM(complaint_count) AS complaints, SUM(narrative_count) AS narratives "
+    "FROM metrics" + where + " GROUP BY 1 ORDER BY 1",
+    params,
 )
 
-st.subheader("02 / Where complaints concentrate")
-left, right = st.columns(2)
-for column, label, container in [
-    ("company_name", "Companies", left),
-    ("product", "Products", right),
-]:
-    ranked = query(
-        f"SELECT COALESCE({column}, 'Missing label') AS category, SUM(complaint_count) AS complaints FROM metrics"
-        + where
-        + " GROUP BY 1 ORDER BY complaints DESC, category LIMIT 10",
+overview, trends, company_tab, issues_tab, response_tab, geo_tab = st.tabs(
+    [
+        "Overview",
+        "Trends",
+        "Companies",
+        "Products & Issues",
+        "Response Outcomes",
+        "Geography & Channels",
+    ]
+)
+
+with overview:
+    st.subheader("Complaint demand at a glance")
+    trend_chart(trend, "overview_trend")
+    st.caption(
+        "Received-date counts. First and last buckets may be partial. Public complaint volume is not normalized by company size or customer count."
+    )
+    left, right = st.columns(2)
+    with left:
+        count_chart(
+            rank("company_name", limit=5),
+            "category",
+            "Leading companies by volume",
+            height=290,
+        )
+    with right:
+        count_chart(
+            rank("product", limit=5),
+            "category",
+            "Leading products by volume",
+            "#147d83",
+            290,
+        )
+    top5 = rank("company_name", limit=5)["complaints"].sum()
+    st.caption(
+        f"Top five companies account for {100 * top5 / totals['complaints']:.2f}% of complaints in the selected view. Concentration is a volume measure, not a company performance rating."
+    )
+
+with trends:
+    st.subheader("Volume and change over time")
+    from datetime import timedelta
+
+    duration = (dates[1] - dates[0]).days + 1
+    prior_end = dates[0] - timedelta(days=1)
+    prior_start = prior_end - timedelta(days=duration - 1)
+    if prior_start >= bounds["first"].date():
+        previous = query(
+            "SELECT SUM(complaint_count) AS complaints FROM metrics" + where,
+            (prior_start, prior_end) + params[2:],
+        ).iloc[0]["complaints"]
+        previous = 0 if pd.isna(previous) else previous
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Current period", compact(totals["complaints"]))
+        c2.metric("Previous equal-length period", compact(previous))
+        c3.metric(
+            "Volume change",
+            f"{100 * (totals['complaints'] / previous - 1):+.2f}%"
+            if previous
+            else "N/A",
+        )
+        st.caption(
+            f"Previous comparison window: {prior_start:%d %b %Y}–{prior_end:%d %b %Y}. Same company/product filters; equal number of days."
+        )
+    else:
+        st.caption(
+            "Previous-period change is unavailable: the equal-length comparison would extend before snapshot coverage. Select a shorter, later date range to compare."
+        )
+    trend_chart(trend, "detail_trend")
+    st.caption(
+        "Trend interval follows the sidebar selection. Missing buckets have no matching complaints; boundary periods can be partial."
+    )
+    st.markdown("**Published narrative coverage by period**")
+    coverage = trend.copy()
+    coverage["coverage_pct"] = 100 * coverage["narratives"] / coverage["complaints"]
+    coverage["count_label"] = coverage["complaints"].map(compact)
+    coverage["narrative_label"] = coverage["narratives"].map(compact)
+    fig = style_chart(
+        px.line(
+            coverage,
+            x="period",
+            y="coverage_pct",
+            markers=True,
+            custom_data=["count_label", "narrative_label"],
+            color_discrete_sequence=["#b99154"],
+            labels={
+                "period": "Received period",
+                "coverage_pct": "Narrative coverage (%)",
+            },
+        )
+    )
+    fig.update_yaxes(range=[0, 100], ticksuffix="%")
+    fig.update_traces(
+        hovertemplate="<b>%{x|%d %b %Y}</b><br>Coverage: %{y:.2f}%<br>Complaints: %{customdata[0]}<br>Narratives: %{customdata[1]}<extra></extra>"
+    )
+    st.plotly_chart(fig, width="stretch")
+    st.caption(
+        "Published narrative availability varies over time; absence of text does not mean absence of customer problems."
+    )
+    with st.expander("Download report data"):
+        display_table(trend, ["complaints", "narratives"])
+        st.download_button(
+            "Download filtered trends",
+            trend.to_csv(index=False),
+            "complaint_trends.csv",
+            "text/csv",
+        )
+
+with company_tab:
+    st.subheader("Company concentration and recorded responses")
+    count_chart(
+        rank("company_name", limit=15),
+        "category",
+        "Top 15 companies by complaint volume",
+        height=520,
+    )
+    company_metrics = query(
+        "SELECT COALESCE(company_name, 'Missing label') AS company, "
+        "SUM(complaint_count) AS complaints, "
+        "100.0 * SUM(timely_response_count) / NULLIF(SUM(known_timeliness_count),0) AS timely_rate_pct, "
+        "100.0 * SUM(narrative_count) / NULLIF(SUM(complaint_count),0) AS narrative_coverage_pct "
+        "FROM metrics" + where + " GROUP BY 1 ORDER BY complaints DESC, company",
         params,
     )
-    ranked["count_label"] = ranked["complaints"].map(compact)
-    with container:
-        st.markdown(f"**Top 10 {label.lower()}**")
-        st.plotly_chart(
-            style_chart(
-                px.bar(
-                    ranked.sort_values("complaints").assign(
-                        display_label=lambda frame: frame["category"].map(
-                            lambda label: label if len(label) < 36 else label[:33] + "…"
-                        )
-                    ),
-                    x="complaints",
-                    y="display_label",
-                    orientation="h",
-                    labels={"display_label": "", "complaints": "Complaints"},
-                    custom_data=["category", "count_label"],
-                    text="count_label",
-                    color_discrete_sequence=["#294e73"],
-                ),
-                height=400,
-            )
-            .update_traces(
-                texttemplate="%{text}",
-                textposition="outside",
-                cliponaxis=False,
-                hovertemplate="<b>%{customdata[0]}</b><br>Complaints: %{customdata[1]}<extra></extra>",
-            )
-            .update_layout(margin=dict(l=20, r=90, t=30, b=35)),
-            width="stretch",
+    company_metrics["complaint_share_pct"] = (
+        100 * company_metrics["complaints"] / totals["complaints"]
+    )
+    shown = company_metrics.copy()
+    for col in ["timely_rate_pct", "narrative_coverage_pct", "complaint_share_pct"]:
+        shown[col] = shown[col].map(
+            lambda value: f"{value:.2f}%" if pd.notna(value) else "N/A"
         )
-
-outcomes = query(
-    "SELECT SUM(closed_with_explanation_count) AS explanation, SUM(monetary_relief_count) AS monetary, SUM(non_monetary_relief_count) AS non_monetary, SUM(in_progress_count) AS in_progress, SUM(untimely_response_outcome_count) AS untimely, SUM(unknown_response_outcome_count) AS missing FROM metrics"
-    + where,
-    params,
-).iloc[0]
-outcome_rows = [
-    ("Closed with explanation", outcomes["explanation"]),
-    ("Monetary relief", outcomes["monetary"]),
-    ("Non-monetary relief", outcomes["non_monetary"]),
-    ("In progress", outcomes["in_progress"]),
-    ("Untimely response outcome", outcomes["untimely"]),
-    ("Missing outcome", outcomes["missing"]),
-]
-outcome_rows.append(
-    (
-        "Other recorded outcomes",
-        max(0, totals["complaints"] - sum(v for _, v in outcome_rows)),
-    )
-)
-outcome_frame = pd.DataFrame(outcome_rows, columns=["Recorded outcome", "Complaints"])
-outcome_frame["share_pct"] = 100 * outcome_frame["Complaints"] / totals["complaints"]
-outcome_frame["count_label"] = outcome_frame["Complaints"].map(compact)
-st.subheader("03 / Recorded response outcomes")
-st.plotly_chart(
-    style_chart(
-        px.bar(
-            outcome_frame.sort_values("Complaints"),
-            x="Complaints",
-            y="Recorded outcome",
-            orientation="h",
-            color_discrete_sequence=["#147d83"],
-            labels={"Recorded outcome": ""},
-            custom_data=["share_pct", "count_label"],
-            text="count_label",
-        ),
-        height=340,
-    )
-    .update_traces(
-        texttemplate="%{text}",
-        textposition="outside",
-        cliponaxis=False,
-        hovertemplate="<b>%{y}</b><br>Complaints: %{customdata[1]}<br>Share: %{customdata[0]:.2f}%<extra></extra>",
-    )
-    .update_layout(margin=dict(l=20, r=90, t=30, b=35)),
-    width="stretch",
-)
-st.caption(
-    "Outcome categories reflect the export snapshot. They do not measure customer satisfaction, relief amounts, or current resolution status."
-)
-with st.expander("Trend data and definitions"):
-    display_trend = trend[["period", "complaints", "narratives"]].copy()
-    for column in ["complaints", "narratives"]:
-        display_trend[column] = display_trend[column].map(compact)
-    st.dataframe(display_trend, hide_index=True, width="stretch")
+    display_table(shown, ["complaints"])
     st.download_button(
-        "Download filtered trend CSV",
-        trend[["period", "complaints", "narratives"]].to_csv(index=False),
-        "complaint_trend.csv",
+        "Download company comparison",
+        company_metrics.to_csv(index=False),
+        "company_comparison.csv",
         "text/csv",
     )
     st.caption(
-        "Count notation: K = thousand; M = million; B = billion. Display values are rounded; CSV downloads retain exact counts."
-    )
-    st.markdown(
-        "**Timely response rate:** timely response count ÷ known timeliness count. **Narrative coverage:** published narrative count ÷ complaint count. This aggregate supports date, company and product exploration. Issue, state, individual narrative retrieval and AI chat are not included in this dashboard."
+        "These rates use each company's eligible records. Complaint share is relative to the selected view, not market share."
     )
 
+with issues_tab:
+    st.subheader("Products, issues and sub-issues")
+    product_totals = rank("product", limit=100)
+    product_totals["count_label"] = product_totals["complaints"].map(compact)
+    product_totals["share_pct"] = (
+        100 * product_totals["complaints"] / totals["complaints"]
+    )
+    fig = px.treemap(
+        product_totals,
+        path=["category"],
+        values="complaints",
+        custom_data=["count_label", "share_pct"],
+        color_discrete_sequence=["#294e73", "#147d83", "#63ada7", "#b99154"],
+    )
+    fig.update_traces(
+        textinfo="label",
+        hovertemplate="<b>%{label}</b><br>Complaints: %{customdata[0]}<br>Share: %{customdata[1]:.2f}%<extra></extra>",
+    )
+    fig.update_layout(
+        height=390,
+        margin=dict(l=10, r=10, t=10, b=10),
+        uniformtext=dict(minsize=12, mode="hide"),
+    )
+    st.plotly_chart(fig, width="stretch")
+    issue_options = query(
+        "SELECT DISTINCT issue FROM metrics"
+        + where
+        + " AND issue IS NOT NULL ORDER BY 1",
+        params,
+        "issues",
+    )["issue"].tolist()
+    chosen_issue = st.selectbox("Drill into an issue", ["All issues"] + issue_options)
+    extra = " AND issue = ?" if chosen_issue != "All issues" else ""
+    extra_params = (chosen_issue,) if extra else ()
+    left, right = st.columns(2)
+    with left:
+        count_chart(
+            rank("issue", "issues", extra, extra_params),
+            "category",
+            "Leading issues",
+            height=430,
+        )
+    with right:
+        count_chart(
+            rank("sub_issue", "issues", extra, extra_params),
+            "category",
+            "Leading sub-issues",
+            "#147d83",
+            430,
+        )
+    st.caption(
+        "The issue selection applies to these two drilldown charts. Product treemap and headline KPIs retain the global filters. Missing labels are retained; source product labels are not merged."
+    )
+
+with response_tab:
+    st.subheader("Response timeliness and outcome mix")
+    response = (
+        query(
+            "SELECT SUM(not_timely_response_count) AS not_timely, SUM(unknown_response_outcome_count) AS missing, "
+            "SUM(monetary_relief_count) AS monetary, SUM(non_monetary_relief_count) AS non_monetary, "
+            "SUM(closed_with_explanation_count) AS explanation, SUM(in_progress_count) AS in_progress, "
+            "SUM(untimely_response_outcome_count) AS untimely FROM metrics" + where,
+            params,
+        )
+        .iloc[0]
+        .fillna(0)
+    )
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Not-timely response rate", rate(response["not_timely"], totals["known"]))
+    c2.metric(
+        "Recorded relief share",
+        rate(response["monetary"] + response["non_monetary"], totals["complaints"]),
+    )
+    c3.metric("Missing response outcomes", compact(response["missing"]))
+    outcome_rows = [
+        ("Closed with explanation", response["explanation"]),
+        ("Monetary relief", response["monetary"]),
+        ("Non-monetary relief", response["non_monetary"]),
+        ("In progress", response["in_progress"]),
+        ("Untimely response outcome", response["untimely"]),
+        ("Missing outcome", response["missing"]),
+    ]
+    outcome_rows.append(
+        (
+            "Other outcomes",
+            max(0, totals["complaints"] - sum(v for _, v in outcome_rows)),
+        )
+    )
+    outcomes = pd.DataFrame(outcome_rows, columns=["outcome", "complaints"])
+    outcomes["count_label"] = outcomes["complaints"].map(compact)
+    outcomes["share_pct"] = 100 * outcomes["complaints"] / totals["complaints"]
+    left, right = st.columns([1, 1])
+    with left:
+        fig = px.pie(
+            outcomes[outcomes["complaints"] > 0],
+            names="outcome",
+            values="complaints",
+            hole=0.65,
+            custom_data=["count_label", "share_pct"],
+            color_discrete_sequence=[
+                "#294e73",
+                "#b99154",
+                "#147d83",
+                "#63ada7",
+                "#95a6b8",
+                "#d4dce5",
+            ],
+        )
+        fig.update_traces(
+            textinfo="none",
+            hovertemplate="<b>%{label}</b><br>Complaints: %{customdata[0]}<br>Share: %{customdata[1]:.2f}%<extra></extra>",
+        )
+        fig.update_layout(
+            height=410,
+            margin=dict(l=10, r=10, t=10, b=10),
+            legend=dict(orientation="h", y=-0.1),
+        )
+        st.plotly_chart(fig, width="stretch")
+    with right:
+        shown = outcomes[["outcome", "complaints", "share_pct"]].copy()
+        shown["share_pct"] = shown["share_pct"].map(lambda v: f"{v:.2f}%")
+        display_table(shown, ["complaints"])
+    st.caption(
+        "Relief share combines recorded monetary and non-monetary relief; no dollar amounts are available. In-progress status reflects the snapshot, not a live backlog. Recorded outcome categories and source timeliness are different fields."
+    )
+
+with geo_tab:
+    st.subheader("Geographic and submission-channel patterns")
+    states = rank("state", "geography", limit=100)
+    states["count_label"] = states["complaints"].map(compact)
+    state_codes = set(
+        "AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC".split()
+    )
+    mapped = states[states["category"].isin(state_codes)]
+    fig = px.choropleth(
+        mapped,
+        locations="category",
+        locationmode="USA-states",
+        scope="usa",
+        color="complaints",
+        custom_data=["count_label"],
+        color_continuous_scale=["#e3efef", "#147d83", "#10243a"],
+    )
+    fig.update_traces(
+        hovertemplate="<b>%{location}</b><br>Complaints: %{customdata[0]}<extra></extra>"
+    )
+    max_count = mapped["complaints"].max() if not mapped.empty else 0
+    ticks = [max_count * i / 4 for i in range(5)] if max_count else [0]
+    fig.update_layout(
+        height=420,
+        margin=dict(l=0, r=0, t=0, b=0),
+        geo=dict(bgcolor="rgba(0,0,0,0)"),
+        coloraxis_colorbar=dict(
+            title="Complaints", tickvals=ticks, ticktext=[compact(v) for v in ticks]
+        ),
+    )
+    st.plotly_chart(fig, width="stretch")
+    omitted = states[~states["category"].isin(state_codes)]["complaints"].sum()
+    st.caption(
+        f"Map shows U.S. states and DC. Other or missing locations ({compact(omitted)} complaints) remain in totals and the table below. Counts are not population-adjusted."
+    )
+    left, right = st.columns(2)
+    with left:
+        count_chart(
+            states.head(10), "category", "Leading recorded locations", height=400
+        )
+    with right:
+        count_chart(
+            rank("submission_channel", "channels"),
+            "category",
+            "Submission channels",
+            "#147d83",
+            400,
+        )
+    with st.expander("All recorded locations"):
+        display_table(states, ["complaints"])
+        st.download_button(
+            "Download location counts",
+            states[["category", "complaints"]].to_csv(index=False),
+            "location_counts.csv",
+            "text/csv",
+        )
+
+st.caption(
+    "K = thousand · M = million · B = billion. Display counts are rounded; CSV downloads retain exact values. Filters apply across all tabs; local issue drilldown is explicitly scoped."
+)
+with st.expander("Metric definitions"):
+    st.markdown(
+        "**Timely response rate:** timely responses ÷ records with known timeliness. **Narrative coverage:** published narratives ÷ complaints. **Complaint share:** category volume ÷ selected complaint total. Zero denominators yield N/A. These summaries do not contain narrative text or resolution duration; the AI agent is a later project stage."
+    )
 st.markdown(
-    '<div class="footer">Financial Complaint Intelligence · Source: CFPB public complaint snapshot. Raw volumes are not normalized by company size or customer count and do not establish internal root causes.</div>',
+    '<div class="footer">Financial Complaint Intelligence · Source: CFPB public complaint snapshot. Raw volumes do not establish company-wide incident rates or internal root causes.</div>',
     unsafe_allow_html=True,
 )
