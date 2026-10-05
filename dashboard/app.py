@@ -68,12 +68,9 @@ h3 {font-size: 1.2rem !important; margin-top: .8rem;}
 @media(max-width: 700px) {.hero {padding: 22px;} .block-container {padding-top: 1.3rem;} [data-testid="stMetric"] {padding: 14px;}}
 </style>
 <div class="hero">
-<div class="eyebrow">FINANCIAL COMPLAINT INTELLIGENCE / EXECUTIVE OVERVIEW</div>
-<h1>A clearer view of customer complaints.</h1>
-<p>Explore complaint demand, recorded company responses and the availability of customer narrative evidence.</p>
-<span class="badge">CFPB public complaint data</span>
-<span class="badge">Nov 2022 – Aug 2026</span>
-<span class="badge">Validated snapshot</span>
+<div class="eyebrow">FINANCIAL COMPLAINT INTELLIGENCE</div>
+<h1>The Consumer Complaint Landscape</h1>
+<p>Explore where complaints concentrate and how companies respond.</p>
 </div>
 """,
     unsafe_allow_html=True,
