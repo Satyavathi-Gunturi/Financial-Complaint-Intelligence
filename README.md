@@ -27,16 +27,9 @@ The intended decisions are which complaint categories need investigation, where 
 ## Architecture
 This project combines **medallion architecture** with **two gold query structures**. Silver is shared; wide gold remains available alongside the additional star schema. The star models reuse the existing gold metric definitions rather than replacing them.
 
-```mermaid
-flowchart TD
-    A[CFPB archive ZIPs] --> B[Bronze Parquet]
-    B --> C[dbt staging]
-    C --> D[Normalized silver]
-    D --> E[Wide gold metrics]
-    E --> F[Gold star schema]
-    E --> G[Planned dashboard and agent]
-    F --> G
-```
+![Financial Complaint Intelligence architecture](assets/diagrams/system-architecture.svg)
+
+[View full-size diagram](assets/diagrams/system-architecture.svg) · [Download editable draw.io file](assets/diagrams/system-architecture.drawio) · [High-Level System Design](docs/HLSD.md)
 
 ## Documentation
 - [Coding and contribution conventions](CONTRIBUTING.md)
