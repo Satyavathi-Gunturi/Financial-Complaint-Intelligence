@@ -36,4 +36,7 @@ The future agent should answer daily, weekly, monthly and custom-period question
 An LLM cannot repair undefined metrics, lost records or double-counting joins. Tested data and documented business definitions give the agent reliable tools and provide ground truth for evaluating its answers.
 
 ## What is still ahead
-Permanent storage selection, dashboard development, read-only SQL tool, narrative indexing, LLM selection, wide/star benchmarks, deployment, automated refresh and monitoring. Current narrative_search_documents is a relational view, not semantic search. Checkpoints are development recovery aids, not deployment.
+Resolve the automated source-download HTTP 403 and accept the first full rolling release; select permanent detailed-data storage; implement the read-only SQL tool, narrative indexing, LLM integration, wide/star benchmarks and operational monitoring. Current narrative_search_documents is a relational view, not semantic search. Checkpoints are development recovery aids, not deployment.
+
+## Updates through 2026-10-05
+Recovered a silver-only database backup, rebuilt gold and star successfully, reconciled 14,482,997 rows across all three layers, and saved `complaints_complete.duckdb` (5.13 GB). Exported four independently reconciled dashboard aggregates and deployed six executive tabs in Streamlit, with compact K/M/B counts and consistent hover labels. Implemented a daily, source-hashed rolling 36-month rebuild and branch/PR/merge publication. Synthetic integration validation passes; the first hosted full archive download returned HTTP 403 and published no replacement data. The AI agent remains planned.

@@ -13,7 +13,7 @@ The live Colab notebook `01_CFPB_Data_Exploration.ipynb` was read on 2026-10-05.
 3. Cache ZIP downloads, use HTTP validators when available, and hash bytes with SHA-256. Re-download if cache identity is uncertain. Source URLs, hashes, window boundaries and transformation code determine revision identity.
 4. On a changed revision, rebuild the retained records in a fresh temporary database. Records outside the received-date window are excluded. Existing complaints are not blindly appended; a higher numeric archive release takes precedence for an overlapping complaint ID, with source record order as a deterministic tie-breaker. Report overlap counts. Replaced files with the same name are detected by content changes under the server's validator contract.
 5. Build all dbt models and run their data tests. Independently reconcile all additive flag totals for each of four dashboard exports and enforce a 90 MiB per-file serving guard.
-6. Stage outputs before copying them into the repository. Commit all four files plus `reports/refresh_manifest.json` in one commit. Any earlier failure leaves the published data untouched. A rejected push or rebase stops publication; GitHub Actions logs hold the failure.
+6. Stage outputs before copying them into the repository. Commit all four files plus `reports/refresh_manifest.json` on a new `automated/data-refresh-<run-id>` branch, open a pull request and merge with a merge commit. Any earlier failure leaves the published data untouched. A rejected branch push or PR merge stops publication; GitHub Actions logs hold the failure.
 7. Streamlit follows repository changes; query cache keys include each file's mtime and size. The UI shows observed coverage and last successful validation. CSV downloads retain exact counts; displayed counts use K/M/B.
 
 ## Storage and limits
@@ -36,3 +36,10 @@ python scripts/refresh_pipeline.py --force
 ```
 
 The final command stages a full release in `data/release`; it does not publish by itself. The workflow owns the single-commit publication. Dashboard metrics and expected record counts will change after the first 36-month retention build; the original full-snapshot counts stay documented as historical results.
+
+## Pull request publication
+
+Enable **Allow GitHub Actions to create and approve pull requests** under repository Settings → Actions → General → Workflow permissions if GitHub blocks automated PR creation. The workflow token requests repository contents and pull-request write access. No additional credentials are required. PRs created by GITHUB_TOKEN do not trigger other Actions workflows: the release job performs its own full validation before creating the PR. Required branch checks/review rules remain authoritative; if they block an immediate merge, the PR remains pending and the current serving data is preserved. A separately configured GitHub App or suitable scoped token would be needed to trigger independent PR CI for bot-created releases.
+
+
+Current full-run blocker (2026-10-05): GitHub-hosted execution successfully discovered the archive catalogue and passed synthetic dbt validation, but its first source ZIP request returned HTTP 403. No refreshed datasets were published. Unattended full-data ingestion requires an allowed download path or execution environment; it is not yet operational. Existing dashboard datasets remain unchanged.

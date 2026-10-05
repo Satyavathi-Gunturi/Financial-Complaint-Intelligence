@@ -9,6 +9,7 @@ on:
         type: boolean
         default: false
   push:
+    branches: [main]
     paths:
       - '.github/workflows/data-refresh.yml'
       - 'scripts/refresh_pipeline.py'
@@ -17,9 +18,10 @@ on:
       - 'dbt/**'
 permissions:
   contents: write
+  pull-requests: write
 concurrency:
   group: complaint-data-refresh
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   refresh:
     runs-on: ubuntu-latest
@@ -52,7 +54,9 @@ jobs:
         with:
           path: data/source_cache
           key: cfpb-source-${{ github.run_id }}
-      - name: Publish validated release in one commit
+      - name: Publish validated release through a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ ! -f data/release/refresh_manifest.json ]; then
             echo "No changed release to publish."
@@ -64,9 +68,18 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -f dashboard_daily_company_product.parquet dashboard_issues.parquet dashboard_geography.parquet dashboard_channels.parquet
           git add reports/refresh_manifest.json
+          git checkout -b "automated/data-refresh-${GITHUB_RUN_ID}"
           git commit -m 'Refresh validated rolling 36-month complaint datasets'
-          git pull --rebase origin main
-          git push origin HEAD:main
+          git push origin HEAD
+          cat > /tmp/refresh-pr.md <<'BODY'
+          Update the dashboard's rolling 36-month complaint window from the latest official CFPB archives. All four exports are published together with their source hashes and validation metadata.
+
+          Validation: synthetic retention and revised-record tests; full dbt build and 126 data tests; all additive metric totals reconciled across four exports. Failure before merge leaves the current dashboard datasets in place.
+
+          This PR was created by GITHUB_TOKEN; GitHub does not trigger additional PR workflows for token-generated events. Validation above ran in the scheduled refresh job. Required branch checks are respected and may leave this PR pending.
+          BODY
+          pr_url=$(gh pr create --base main --head "automated/data-refresh-${GITHUB_RUN_ID}" --title 'Refresh rolling 36-month complaint datasets' --body-file /tmp/refresh-pr.md)
+          gh pr merge "$pr_url" --merge
       - name: Preserve build evidence
         if: always()
         uses: actions/upload-artifact@v4

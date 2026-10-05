@@ -41,7 +41,13 @@ GROUP BY 1 ORDER BY 1;
 ```
 
 ## Repeatability limits
-The existing notebook uses full rebuilds, development paths and completion markers without source hashing. It is not a scheduled production ingestion system. Store file checksums and source versions before introducing automated refreshes. Full-data checks were run in the user's Colab environment; repository smoke validation uses synthetic data separately from those reported counts.
+The existing notebook uses full rebuilds, development paths and completion markers without source hashing. It is not a scheduled production ingestion system. The separate scheduled pipeline now records source hashes and validators; see [automated refresh](automated-refresh.md). Its first full source download is blocked by HTTP 403, so synthetic validation does not establish operational refresh. Full-data checks were run in the user's Colab environment; repository smoke validation uses synthetic data separately from those reported counts.
 
 ## Synthetic validation without source downloads
 Run `python scripts/smoke_test.py`. This creates a temporary six-record synthetic bronze table, builds every model, runs dbt assertions and checks representative edge cases. No production dataset or credentials are needed.
+
+## Current Colab recovery and serving workflow
+The repository notebook is an output-cleared copy of the [current interactive notebook](https://colab.research.google.com/drive/1AIUZJt1CGw3rxZAZhmHnVawbztBoCrTW), reviewed on 2026-10-05. Run ingestion/build cells for a new build, or use the recovery cells for an existing checkpoint; do not blindly execute both paths. The complete checkpoint is `complaints_complete.duckdb` (5.13 GB), under `MyDrive/Financial-Complaint-Intelligence/checkpoints`. The older `complaints.duckdb` backup contained silver only; summary CSVs do not prove gold/star tables were saved. Recovery rebuilt and verified both layers before saving the complete checkpoint. Four dashboard Parquet exports reconcile all 18 additive totals. Large database and source files stay outside GitHub.
+
+## Scheduled rebuild validation
+Install `requirements-refresh.txt`, then run `python scripts/test_refresh_pipeline.py` for the synthetic source-to-export integration check. See the refresh guide for catalogue discovery and staged rebuild commands. Code and data publication follow branch → PR → merge commit.
