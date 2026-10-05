@@ -21,7 +21,7 @@ These views follow the [documented design guidance](../../docs/design-guidelines
 ## Visual conventions
 Filled icons identify services, files, processing, databases and query structures. Blue marks sources and lookup dimensions; teal marks cleaning, relationships and numerical tooling; gold marks business-ready metrics and the fact; purple marks evidence, date roles or recovery responsibilities. Solid cards represent implemented components; dashed cards represent planned components.
 
-Architecture arrows show data or tool flow. Relational-model arrows show reference relationships, with optional narrative and tag rules called out separately. PK/FK annotations describe dbt-tested logical keys, not enforced DuckDB constraints. Full editable Mermaid definitions remain in the corresponding documentation pages as secondary representations.
+Architecture arrows show data or tool flow. Relational-model arrows show reference relationships, with optional narrative and tag rules called out separately. PK/FK annotations describe dbt-tested logical keys, not enforced DuckDB constraints. Silver and star schema pages retain editable Mermaid definitions; architecture and LLD views are maintained through the draw.io generator.
 
 Architecture and processing contracts were updated on 2026-10-05. The first hosted full source download is blocked by HTTP 403; implemented refresh code is not yet operational. Counts describe the verified downloaded snapshot. Future hosting and AI components are explicitly planned.
 
@@ -37,3 +37,4 @@ Architecture and LLD files contain grouped component cards with distinct filled 
 
 ## Regenerate architecture views
 Run `python scripts/design/render_architecture.py` from the repository root. The generator produces the two multi-page draw.io files and five matching SVG previews without external image dependencies. Silver and star schema assets remain separate data-model views.
+
