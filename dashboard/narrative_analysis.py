@@ -60,6 +60,7 @@ def discover(frame, topics=6):
     model = NMF(
         n_components=min(topics, matrix.shape[1], matrix.shape[0] - 1),
         init="nndsvda",
+        solver="mu",
         random_state=42,
         max_iter=300,
     )
