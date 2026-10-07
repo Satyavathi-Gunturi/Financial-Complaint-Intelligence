@@ -68,10 +68,10 @@ The additional star schema reads the existing wide model and preserves its flags
 ## Tests
 SQL/YAML tests verify unique/non-null keys, required fields, dimension relationships, row preservation, narrative preservation, unique tag pairs, product/issue consistency, binary flags, flag partitions and star/wide metric reconciliation. These are dbt assertions; DuckDB tables are not declared with enforced SQL primary-key/foreign-key constraints. Tests must run after transformations.
 
-## Planned agent tool contracts
-`query_metrics(question, structure, filters)` will select either wide or star schema, execute validated read-only SQL with row/time limits, and return columns, rows, query and metric context. `search_narratives(query, filters)` will retrieve complaint IDs, source context and supporting text. These are proposed contracts, not implemented functions.
+## AI Analyst tool contracts
+`dashboard/agent_tools.py` implements `inspect_datasets`, `read_business_document`, `query_metrics` and `search_narratives`. Typed allowlisted metric/dimension arguments generate a single-grain parameterized SELECT. Global filters always apply; dates cannot expand scope. Each disposable DuckDB connection has a 256 MB limit, one thread and a 15-second query interrupt. Aggregate results cap at 50 rows; literal evidence results cap at eight excerpts and require matching overview SHA-256. No arbitrary SQL/code, paths, URLs or cross-grain joins are accepted.
 
-Cross-tool date/company filters must match. Answers should identify snapshot coverage and distinguish counts, response categories and narrative findings. Both structures will be evaluated against identical question definitions and ground-truth SQL.
+Cross-tool date/company filters must match. Answers should identify snapshot coverage and distinguish counts, response categories and narrative findings. The current chatbot reads serving aggregates, not the wide/star warehouse. Representation benchmarks against identical ground-truth definitions remain future work. Gemini orchestration is in `dashboard/ai_agent.py`; configuration, access gating, process/session quotas, history invalidation and UI source panels are in `dashboard/ai_workspace.py`. See [full contracts and tests](ai-assistant.md).
 
 ## Recovery and portability
 Use `scripts/bootstrap_bronze.py` to bind available Parquet to `main.bronze_complaints`; close other database connections before dbt starts. Profiles use environment-configurable paths. Colab notebook generators still contain the original Colab/Drive paths. Drive-mounted sources must be mounted again after restart. A database backup is copied after connections close; large data stays outside GitHub.

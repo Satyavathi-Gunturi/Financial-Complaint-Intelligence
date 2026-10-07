@@ -34,4 +34,4 @@ A zero denominator yields NULL, not a fabricated zero percent. Dates can be grou
 
 `days_to_send_to_company` is received-to-referral elapsed days, not resolution duration. Public response availability indicates a category, not free-text narrative. Relief flags imply no dollar amount. Missing ZIP/state only describes this published record. Source timeliness and the untimely outcome category are distinct fields; do not substitute one for the other.
 
-`dbt/metric_definitions.yml` records core formulas; gold schema YAML describes every flag. Agent semantic tooling still needs implementation to consume these definitions.
+`dbt/metric_definitions.yml` records core formulas; gold schema YAML describes every flag. AI Analyst can read this document through its business-document tool. Its allowlisted aggregate expressions mirror the formulas above in `dashboard/agent_tools.py`; tests verify weighted rates, NULL denominators and query accounting.
