@@ -1,6 +1,6 @@
-# Planned data-agent evaluation
+# Data-agent validation and planned evaluation
 
-No agent benchmark has been executed yet. The goal is to compare wide gold and star queries using the same complaints, flags, definitions, model, prompt budget and tool limits.
+Offline aggregate-tool and Streamlit UI tests are implemented in `scripts/test_ai_agent.py --app`. The owner confirmed live Gemini access and supplied two example response screenshots on 2026-10-07; these do not establish systematic answer accuracy. No wide-versus-star agent benchmark has been executed yet. The goal is to compare wide gold and star queries using the same complaints, flags, definitions, model, prompt budget and tool limits.
 
 ## Question coverage
 Daily/weekly/monthly counts; custom date windows; company/product/issue filters; timeliness rates; missing outcome handling; ISO week/year boundaries; tag filtering without double counting; partial periods; narrative coverage; evidence-backed narrative explanations; requests the dataset cannot answer.

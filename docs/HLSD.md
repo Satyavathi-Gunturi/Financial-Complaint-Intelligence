@@ -2,7 +2,7 @@
 
 > **Refresh enabled; updates may fail (2026-10-05):** CFPB HTTP 403 errors may prevent downloads. Scheduled runs remain active; failed attempts preserve the last validated snapshot. See [refresh operation](../docs/automated-refresh.md).
 
-The system prepares public CFPB complaint data for an seven-tab leadership dashboard and an optional Gemini evidence-backed business analyst. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
+The system prepares public CFPB complaint data for a seven-tab leadership dashboard and an optional Gemini evidence-backed business analyst. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
 
 ![System architecture](../assets/diagrams/system-architecture.svg)
 
@@ -24,7 +24,7 @@ The architecture separates external source ownership, ephemeral batch compute, v
 
 | Concern | Current requirement / design | Acceptance or limitation |
 |---|---|---|
-| Business scope | Complaint trends, concentrations, response outcomes and narrative availability | Eight dashboard tabs including local NLP and optional Gemini chat; no inferred internal root causes |
+| Business scope | Complaint trends, concentrations, response outcomes and narrative availability | Seven analytical tabs including local NLP, plus a floating Gemini chat panel; no inferred internal root causes |
 | Data lifecycle | Latest archive-labelled 36 calendar months by received date | Not yet applied to serving data; first full rolling release blocked |
 | Correctness | Complaint grain and shared additive metric definitions | dbt tests plus four-export sum reconciliation |
 | Reliability | Stage and validate before PR-based release | Last published revision survives failed processing or blocked merge |
@@ -51,9 +51,9 @@ The architecture separates external source ownership, ephemeral batch compute, v
 | GitHub Actions refresh | Daily check, manual force run, source caching and full retained-window rebuild | Implemented and enabled; HTTP 403 may block downloads |
 | DuckDB + dbt | Bronze identity, typed staging, eight silver tables, wide gold and parallel star schema | Implemented; 21 models and 126 tests pass on synthetic refresh fixtures |
 | Publication gate | Reconcile four datasets, create release branch, PR and merge commit | Implemented; merge depends on repository permissions and branch rules |
-| Streamlit Community Cloud | Serve filters, charts, comparisons, downloads and AI workspace | Seven-tab dashboard; model answers require owner key activation |
+| Streamlit Community Cloud | Serve filters, charts, comparisons, downloads and AI workspace | Seven-tab dashboard with full-width banner, icon pills and floating AI chat; owner activated model access on 2026-10-07 |
 | Colab + Drive | Interactive work and manually saved full-data recovery checkpoints | Existing development workflow |
-| Gemini AI Analyst | Query aggregate metrics, retrieve sampled excerpts and explain business/source context | Implemented; Free Tier key and access code required; live-model acceptance pending |
+| Gemini AI Analyst | Query aggregate metrics, retrieve sampled excerpts and explain business/source context | Activated by the owner on 2026-10-07; private workspace code required; systematic live quality evaluation pending |
 
 ## Refresh lifecycle
 
@@ -77,8 +77,9 @@ The initial dashboard still represents the historical November 2022–August 202
 | Trends | Time patterns and equal-length previous-period change | Daily company/product |
 | Companies | Company volume share and recorded response rates | Daily company/product |
 | Products & Issues | Product treemap and issue/sub-issue drilldown | Daily company/product + issue aggregate |
-| Response Outcomes | Timeliness and recorded relief/outcome mix | Daily company/product |
+| Responses | Timeliness and recorded relief/outcome mix | Daily company/product |
 | Geography & Channels | State patterns and submission-channel volume | State + channel aggregates |
+| Narratives | Sampled customer concerns, word clusters and supporting excerpts | Hash-bound narrative sample |
 
 Date, company, product and sub-product filters apply across tabs. Local issue selection affects only its drilldown charts. The files are queried separately: joining different aggregate grains would multiply complaints. Cache keys include dataset file identity. The manifest adds last validated refresh and observed coverage. Display values use K/M/B while CSVs retain exact counts.
 

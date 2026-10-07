@@ -465,7 +465,7 @@ p.note(
     130,
     "OPTIONAL AI  ·  GEMINI + SQL + BUSINESS CONTEXT",
     [
-        "Free Tier key + access code; activation required",
+        "Owner activated 2026-10-07; private access code",
         "Aggregates + bounded narrative evidence sample",
         "Business docs + constrained SQL + cited sources",
     ],
@@ -717,7 +717,7 @@ a = Page(
     "ai-analyst",
     "HLSD 03 — Whole-dashboard AI Analyst",
     "Gemini Free Tier orchestration · Business context + constrained SQL + cited public evidence",
-    "SCOPE  ·  Optional serving feature; activation requires owner configuration. No full warehouse endpoint.",
+    "SCOPE  ·  Configured optional chat; owner access confirmed 2026-10-07. No full warehouse endpoint.",
 )
 a.card(
     "reader",
@@ -886,7 +886,7 @@ a.note(
     75,
     "ACTIVATION / ACCEPTANCE",
     [
-        "Free-project key + access code + owner billing attestation. Offline tests pass; live model quality must be checked after activation."
+        "Owner activation confirmed 2026-10-07; free-project key + private code. Offline tests pass; systematic live-quality evaluation pending."
     ],
     TEAL,
 )
