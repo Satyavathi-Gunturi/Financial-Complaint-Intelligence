@@ -18,7 +18,7 @@ h3 {font-size:1.2rem !important;margin-top:.6rem;}
 .stTabs [role="tab"] {display:flex;align-items:center;gap:8px;height:48px;padding:0 14px;flex:1 0 auto;border-radius:24px;color:#142b3b;font-weight:600;white-space:nowrap;}
 .stTabs [role="tab"] p {font-size:.87rem;font-weight:650;}
 /* Material icons come from Streamlit's markdown renderer. */
-.stTabs [role="tab"] [data-testid="stIconMaterial"] {color:inherit;font-variation-settings:'FILL' 1;font-size:1.15rem;}
+.stTabs [role="tab"] span[role="img"] {color:inherit;font-variation-settings:'FILL' 1;font-size:20px !important;vertical-align:middle !important;line-height:1;}
 .stTabs [role="tab"]:hover {background:#e9f3f1;}
 .stTabs [role="tab"][aria-selected="true"]:hover {background:#087f8c;}
 .stTabs [role="tab"][aria-selected="true"] {background:#087f8c;color:#fff;}
@@ -51,3 +51,6 @@ h3 {font-size:1.2rem !important;margin-top:.6rem;}
   [data-testid="stHorizontalBlock"]:has([data-testid="stPlotlyChart"]) {flex-wrap:wrap;}
   [data-testid="stHorizontalBlock"]:has([data-testid="stPlotlyChart"]) > [data-testid="stColumn"] {flex:1 1 100% !important;width:100% !important;min-width:0;}
 }
+
+[data-testid="stPopoverBody"] [data-testid="stHorizontalBlock"]:has(.ai-panel-title) > [data-testid="stColumn"]:first-child {flex:1 1 0 !important;min-width:0;}
+[data-testid="stPopoverBody"] [data-testid="stHorizontalBlock"]:has(.ai-panel-title) > [data-testid="stColumn"]:last-child {flex:0 0 88px !important;min-width:88px;}
