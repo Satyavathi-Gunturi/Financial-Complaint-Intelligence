@@ -151,7 +151,7 @@ def render(root, scope):
             )
             unlock = st.form_submit_button("Open AI workspace")
         if unlock:
-            if hmac.compare_digest(entered, access_code):
+            if hmac.compare_digest(entered.encode(), access_code.encode()):
                 st.session_state.ai_unlocked = unlock_signature
                 st.rerun()
             else:

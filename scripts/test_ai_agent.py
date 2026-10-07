@@ -367,7 +367,7 @@ def test_app():
         os.environ,
         {
             "GEMINI_API_KEY": "test-offline-only",
-            "AI_ACCESS_CODE": "test-workspace",
+            "AI_ACCESS_CODE": "test-workspace-✓",
             "AI_FREE_TIER_CONFIRMED": "true",
         },
     ):
@@ -380,7 +380,7 @@ def test_app():
             button for button in app.button if button.label == "Open AI workspace"
         ).click().run()
         assert app.error
-        app.text_input(key="ai_access_entry").set_value("test-workspace")
+        app.text_input(key="ai_access_entry").set_value("test-workspace-✓")
         next(
             button for button in app.button if button.label == "Open AI workspace"
         ).click().run()
