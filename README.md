@@ -1,13 +1,22 @@
 # Financial Complaint Intelligence
 
-> [!WARNING]
-> **Refresh may fail — CFPB HTTP 403 (2026-10-05).** CFPB archive and API requests from the GitHub runner have returned Akamai **Access Denied** responses. Daily and automatic refresh remain enabled. If this issue occurs, the attempted update will fail and the dashboard will retain its last validated snapshot. A successful refresh requires source access and all validation gates to pass.
+[**Open the live executive dashboard →**](https://financial-complaint-intelligence.streamlit.app/)
 
-![Screenshot of the preserved GitHub HTTP 403 diagnostic evidence](assets/screenshots/cfpb-403-access-denied.jpg)
+![Live executive dashboard with full-width banner, icon navigation, shared filters and overview charts](assets/screenshots/dashboard-overview.jpg)
 
-*Screenshot of the actual GitHub diagnostic report. [Investigation and evidence](docs/cfpb-access-diagnostics.md).*
+*Live dashboard captured on 2026-10-07. Seven analytical tabs share sidebar filters; the floating AI Analyst is available throughout.*
 
-A CFPB complaint analytics platform with an seven-tab executive dashboard, a tested rolling-refresh implementation, and a configurable Gemini business chatbot with constrained SQL and cited evidence.
+### AI Analyst in action
+
+The configured Gemini assistant answers business questions using repository definitions, constrained aggregate SQL and cited evidence. These owner-supplied screenshots show real live responses on 2026-10-07. Source IDs are visible; expand **Sources, executed SQL and exact results** in the app to inspect the underlying evidence.
+
+| Business context | Monthly complaint analysis |
+|---|---|
+| ![AI Analyst explains the dashboard and its limits](assets/screenshots/ai-dashboard-context.jpg) | ![AI Analyst answers a monthly complaint-volume question with source references](assets/screenshots/ai-monthly-volume.jpg) |
+
+*Examples demonstrate live access, not a completed accuracy benchmark. The assistant requires the private workspace code; public charts need no code.*
+
+A CFPB complaint analytics platform with a seven-tab executive dashboard, a tested rolling-refresh implementation, and a configurable Gemini business chatbot with constrained SQL and cited evidence.
 
 ## Problem statement
 Financial-services leadership needs a reliable way to identify changing complaint patterns and investigate the customer experiences behind them. This project prepares consistent complaint metrics and narrative evidence for a dashboard and a data agent that can answer questions using SQL calculations and cited complaint records.
@@ -35,11 +44,10 @@ The intended decisions are which complaint categories need investigation, where 
 
 **Implemented NLP:** [Complaint Insights](docs/complaint-insights.md) discovers recurring themes in filtered public narrative excerpts using local TF–IDF + NMF, with an executive briefing, source-labelled concern cards, sample counts, prior-period comparisons and supporting complaint IDs. A fifth serving Parquet holds up to 60K sampled excerpts; population-wide narrative findings are not claimed.
 
-**AI Analyst:** whole-dashboard Gemini integration with business glossary/source documents, constrained aggregate SQL, sampled narrative retrieval, source references and exact query results. Activation requires a Gemini Free Tier key from a project without linked billing. [Setup and contracts](docs/ai-assistant.md).
+**AI Analyst:** whole-dashboard Gemini integration with business glossary/source documents, constrained aggregate SQL, sampled narrative retrieval, source references and exact query results. The owner activated live access on 2026-10-07; new deployments require a Gemini Free Tier key from a project without linked billing. [Setup and contracts](docs/ai-assistant.md).
 
-**Future work:** persistent full-detail warehouse serving, semantic/vector narrative retrieval, wide/star agent benchmarks and recorded live-model evaluations. Offline tool/UI tests pass; live quality is not established until key activation and acceptance.
+**Future work:** persistent full-detail warehouse serving, semantic/vector narrative retrieval, wide/star agent benchmarks and recorded live-model evaluations. Offline tool/UI tests pass; systematic live answer-quality evaluation remains pending despite successful owner activation and the examples above.
 
-[Open the live executive dashboard](https://financial-complaint-intelligence.streamlit.app/)
 
 ## Architecture
 The automated workflow connects public source discovery to a validated release PR and Streamlit deployment. This project combines **medallion architecture** with **two gold query structures**. Silver is shared; wide gold remains available alongside the additional star schema. The star models reuse the existing gold metric definitions rather than replacing them.
@@ -73,7 +81,7 @@ Downloaded from the official [CFPB Consumer Complaint Database Narratives Archiv
 
 ## Dashboard tabs
 
-Overview · Trends · Companies · Products & Issues · Response Outcomes · Geography & Channels · Complaint Insights. Global filters span tabs; local issue drilldown is explicitly scoped. On-screen counts use K/M/B, and downloads keep exact values. See [dashboard operation](dashboard/README.md).
+Overview · Trends · Companies · Products & Issues · Responses · Geography & Channels · Narratives. Global filters span tabs; local issue drilldown is explicitly scoped. On-screen counts use K/M/B, and downloads keep exact values. See [dashboard operation](dashboard/README.md).
 
 ## Validation
 The packaged project passed a synthetic smoke build: **21 models and 126 dbt data tests**, plus edge-case assertions. The workflow in `.github/workflows/dbt-smoke.yml` repeats this check on pushes and pull requests. Full-data results remain separately documented.
@@ -87,5 +95,11 @@ Use [the reproduction guide](docs/reproduction.md) to run entirely in Colab or r
 
 > Narrative availability varies markedly by year. Show coverage alongside AI findings; absence of published text is not absence of customer problems. This is an analysis of a downloaded snapshot, not a live complaint feed.
 
+## Refresh access warning
 
-Current full-run blocker (2026-10-05): GitHub-hosted execution successfully discovered the archive catalogue and passed synthetic dbt validation, but its first source ZIP request returned HTTP 403. No refreshed datasets were published. Unattended full-data ingestion requires an allowed download path or execution environment; it is not yet operational. Existing dashboard datasets remain unchanged.
+> [!WARNING]
+> **Refresh may fail — CFPB HTTP 403 (2026-10-05).** CFPB archive and API requests from the GitHub runner have returned Akamai **Access Denied** responses. Daily and automatic refresh remain enabled. If this issue occurs, the attempted update will fail and the dashboard will retain its last validated snapshot. A successful refresh requires source access and all validation gates to pass.
+
+![Screenshot of the preserved GitHub HTTP 403 diagnostic evidence](assets/screenshots/cfpb-403-access-denied.jpg)
+
+*Screenshot of the actual GitHub diagnostic report. [Investigation and evidence](docs/cfpb-access-diagnostics.md).*

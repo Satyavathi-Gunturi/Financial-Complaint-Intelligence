@@ -33,7 +33,7 @@ C4 is notation-independent. Filled icons, navy headers and layer colors are this
 
 ## Visual and review rules
 
-Each page has a bounded purpose, readable hierarchy, generous spacing and a legend. Source/lookup elements use blue; processing uses teal; analytical data uses gold; metadata/recovery/planned AI uses purple; failure callouts use red. Component types also have distinct filled symbols and textual types, so meaning does not rely on color alone. Solid and dashed relationships distinguish data/publication flow from control/development flow. Planned components are explicitly labeled and dashed.
+Each page has a bounded purpose, readable hierarchy, generous spacing and a legend. Source/lookup elements use blue; processing uses teal; analytical data uses gold; metadata/recovery/AI boundaries use purple; failure callouts use red. Component types also have distinct filled symbols and textual types, so meaning does not rely on color alone. Solid and dashed relationships distinguish data/publication flow from control/development flow. Planned components are explicitly labeled and dashed.
 
 The draw.io files contain native boundaries, cards, text and routed connectors. Each component groups its title, descriptions and embedded vector icon so it can be moved together. Icons are self-contained generic symbols, not vendor logos or a flattened page screenshot. Matching SVGs provide sharp repository previews.
 
