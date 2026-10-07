@@ -13,12 +13,13 @@ import duckdb
 import httpx
 import pandas as pd
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "dashboard"))
 from agent_tools import DOCUMENTS, FILES, FLAGS, AgentTools  # noqa: E402
 from ai_agent import DEFAULT_MODEL, run_agent  # noqa: E402
+from provider_errors import provider_diagnostic  # noqa: E402
 
 
 def metric_args(**changes):
@@ -408,7 +409,28 @@ def test_app():
         assert not app.session_state["ai_messages"]
 
 
+def test_provider_diagnostics():
+    secret = "dummy-secret-must-never-display"
+    for code, message, expected in [
+        (403, "Your API key was reported as leaked", "AI-KEY-BLOCKED"),
+        (400, "API key not valid", "AI-KEY-INVALID"),
+        (403, "permission denied", "AI-PERMISSION"),
+        (429, "quota exceeded", "AI-QUOTA"),
+        (404, "model not found", "AI-MODEL"),
+        (400, "invalid schema", "AI-REQUEST"),
+        (503, "unavailable", "AI-SERVICE"),
+    ]:
+        exc = errors.APIError(code, {"error": {"message": message + secret}})
+        diagnostic = provider_diagnostic(exc)
+        assert diagnostic[0] == expected, diagnostic
+        assert secret not in str(diagnostic)
+    assert provider_diagnostic(httpx.ReadTimeout(secret))[0] == "AI-TIMEOUT"
+    assert provider_diagnostic(httpx.ConnectError(secret))[0] == "AI-CONNECTION"
+    assert secret not in str(provider_diagnostic(RuntimeError(secret)))
+
+
 if __name__ == "__main__":
+    test_provider_diagnostics()
     with tempfile.TemporaryDirectory() as temp:
         tools = fixture(Path(temp))
         test_queries(tools)
