@@ -2,7 +2,7 @@
 
 > **Refresh enabled; updates may fail (2026-10-05):** CFPB HTTP 403 errors may prevent downloads. Scheduled runs remain active; failed attempts preserve the last validated snapshot. See [refresh operation](../docs/automated-refresh.md).
 
-The system prepares public CFPB complaint data for an eight-tab leadership dashboard and an optional Gemini evidence-backed business analyst. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
+The system prepares public CFPB complaint data for an seven-tab leadership dashboard and an optional Gemini evidence-backed business analyst. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
 
 ![System architecture](../assets/diagrams/system-architecture.svg)
 
@@ -51,7 +51,7 @@ The architecture separates external source ownership, ephemeral batch compute, v
 | GitHub Actions refresh | Daily check, manual force run, source caching and full retained-window rebuild | Implemented and enabled; HTTP 403 may block downloads |
 | DuckDB + dbt | Bronze identity, typed staging, eight silver tables, wide gold and parallel star schema | Implemented; 21 models and 126 tests pass on synthetic refresh fixtures |
 | Publication gate | Reconcile four datasets, create release branch, PR and merge commit | Implemented; merge depends on repository permissions and branch rules |
-| Streamlit Community Cloud | Serve filters, charts, comparisons, downloads and AI workspace | Eight-tab dashboard; model answers require owner key activation |
+| Streamlit Community Cloud | Serve filters, charts, comparisons, downloads and AI workspace | Seven-tab dashboard; model answers require owner key activation |
 | Colab + Drive | Interactive work and manually saved full-data recovery checkpoints | Existing development workflow |
 | Gemini AI Analyst | Query aggregate metrics, retrieve sampled excerpts and explain business/source context | Implemented; Free Tier key and access code required; live-model acceptance pending |
 

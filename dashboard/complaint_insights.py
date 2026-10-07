@@ -164,7 +164,7 @@ def render(root, query, where, params, dates, totals, compact, rate):
             ).iloc[0]
             quote = representative_quote(evidence_row["excerpt"], row["concern"])
             st.markdown(
-                '<blockquote style="margin:10px 0;padding:8px 12px;border-left:3px solid #168b88;font-size:14px;color:#334155">'
+                '<blockquote style="margin:10px 0;padding:8px 12px;border-left:3px solid #087f8c;font-size:14px;color:#526773">'
                 + html.escape(quote)
                 + "</blockquote>",
                 unsafe_allow_html=True,
@@ -207,7 +207,7 @@ def render(root, query, where, params, dates, totals, compact, rate):
     st.caption(
         "Discovered word clusters · Larger phrases appear in more excerpts within their cluster. Counts overlap when an excerpt mentions several phrases."
     )
-    palettes = [("#edf9f8", "#087f8c"), ("#f2efff", "#6854b8"), ("#fff5e5", "#926022")]
+    palettes = [("#edf9f8", "#087f8c"), ("#eef2f4", "#142b3b"), ("#faf4e8", "#96733c")]
     for index, (topic, label) in enumerate(labels.items()):
         group = assigned[(assigned.period == "Selected") & (assigned.topic == topic)]
         if group.empty:
@@ -240,7 +240,7 @@ def render(root, query, where, params, dates, totals, compact, rate):
             st.markdown(
                 f'<div style="background:{background};border:1px solid {color}25;border-radius:18px;padding:18px;min-height:210px;margin-bottom:14px">'
                 f'<div style="color:{color};font-size:12px;font-weight:700;letter-spacing:1px">WORD CLUSTER {topic + 1}</div>'
-                f'<div style="margin:7px 0 10px;color:#334155;font-size:13px">{compact(len(group))} sampled excerpts</div>'
+                f'<div style="margin:7px 0 10px;color:#526773;font-size:13px">{compact(len(group))} sampled excerpts</div>'
                 f"<div>{chips}</div></div>",
                 unsafe_allow_html=True,
             )

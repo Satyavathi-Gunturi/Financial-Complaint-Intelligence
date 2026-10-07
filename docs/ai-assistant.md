@@ -1,6 +1,6 @@
 # AI Analyst: whole-dashboard chatbot
 
-The eighth dashboard tab is an optional Gemini-powered business analyst. It answers questions across all serving datasets, explains business terminology and source context, runs constrained read-only SQL, and retrieves sampled public narrative evidence. It is implemented but requires owner configuration before live model answers are available. No API key is stored in the repository.
+The floating **Ask AI Analyst** chat panel is an optional Gemini-powered business analyst. It answers questions across all serving datasets, explains business terminology and source context, runs constrained read-only SQL, and retrieves sampled public narrative evidence. It is implemented but requires owner configuration before live model answers are available. No API key is stored in the repository.
 
 ## Activate without paid API usage
 
@@ -14,7 +14,7 @@ AI_FREE_TIER_CONFIRMED = true
 AI_ACCESS_CODE = "choose-a-long-private-workspace-code"
 ```
 
-3. Save, open **AI Analyst**, enter your workspace code and submit a small test question. Keep both secrets out of chat, GitHub and notebooks. For local development, use an ignored `.streamlit/secrets.toml` or equivalent environment variables.
+3. Save, click **Ask AI Analyst** at the bottom-right, enter your workspace code and submit a small test question. Keep both secrets out of chat, GitHub and notebooks. For local development, use an ignored `.streamlit/secrets.toml` or equivalent environment variables.
 4. Confirm project billing remains unlinked in AI Studio. Do not enable billing or use a paid-project key if the goal is zero API spend.
 
 `AI_FREE_TIER_CONFIRMED` is an owner attestation, not an API billing check. The application cannot determine a key's actual project billing status. It defaults to `gemini-3.5-flash-lite` and also supports `gemini-3.1-flash-lite`. Legacy `gemini-2.5-flash` and `gemini-2.5-flash-lite` remain selectable for projects with existing access, has no paid-provider fallback, and stops on quota/service errors. Google can change model availability, quotas and terms. Free capacity is not an always-on SLA.
@@ -76,3 +76,7 @@ Google limits Gemini 2.5 models to projects that actively used them previously. 
 Gemini 3 requests use `thinking_level="minimal"`; legacy 2.5 requests retain `thinking_budget=0`. Full model contents, including thought signatures, are preserved between tool turns. No automatic model fallback occurs.
 
 Official references: [Gemini model lifecycle](https://ai.google.dev/gemini-api/docs/deprecations), [Flash-Lite capabilities](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite), [API pricing](https://ai.google.dev/gemini-api/docs/pricing). Model access and free-tier capacity still depend on the project.
+
+### Chat navigation
+
+Use the floating **Ask AI Analyst** launcher from any dashboard tab. The close button or clicking outside dismisses the panel while retaining the session conversation and access-code authentication. Sidebar filter changes reset history when the assistant is next opened. Local chart drilldowns still do not change the assistant's scope. The owner confirmed live model access on 2026-10-07; systematic live answer-quality evaluation remains pending.

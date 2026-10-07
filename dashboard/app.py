@@ -6,6 +6,7 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 from ai_workspace import render as render_ai
 from complaint_insights import render as render_insights
@@ -61,35 +62,11 @@ def compact(value):
 
 
 st.markdown(
-    """
-<style>
-[data-testid="stAppViewContainer"] {background: #f3f5f8;}
-[data-testid="stHeader"] {background: rgba(243,245,248,.96);}
-.block-container {padding-top: 2.2rem; padding-bottom: 3rem; max-width: 1550px;}
-[data-testid="stSidebar"] {background: #e9eef4; border-right: 1px solid #d7e0e9;}
-h1,h2,h3 {color: #10243a; letter-spacing: -.035em;}
-h3 {font-size: 1.2rem !important; margin-top: .8rem;}
-[data-testid="stMetric"] {background: #fff; border: 1px solid #e0e6ee; border-top: 3px solid #147d83; border-radius: 14px; padding: 20px 18px; box-shadow: 0 4px 16px rgba(20,38,62,.035);}
-[data-testid="stMetricLabel"] {color: #52657a; font-size: .83rem;}
-[data-testid="stMetricValue"] {color: #10243a; font-weight: 650; font-size: clamp(1.35rem,2.1vw,2.3rem); letter-spacing: -.045em;}
-[data-testid="stPlotlyChart"] {background: white; border: 1px solid #e0e6ee; border-radius: 14px; overflow: hidden; padding: 5px;}
-[data-testid="stExpander"] {background: #fff; border: 1px solid #e0e6ee; border-radius: 12px;}
-.hero {background: linear-gradient(115deg,#0d2137 0%,#153951 70%,#17565c 100%); border-radius: 18px; padding: 30px 34px; margin-bottom: 22px; color: #fff;}
-.hero .eyebrow {color: #8de0d2; font-size: .7rem; letter-spacing: .18em; font-weight: 700; margin-bottom: 13px;}
-.hero h1 {color: #fff; font-size: clamp(1.7rem,3vw,2.6rem); line-height: 1.12; padding: 0; margin: 0 0 12px; letter-spacing: -.045em;}
-.hero p {color: #c0d2df; font-size: .94rem; margin: 0 0 20px; max-width: 750px;}
-.badge {display: inline-block; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 30px; padding: 5px 12px; margin: 0 6px 4px 0; font-size: .72rem; color: #d6e6ef;}
-.scope {color: #52657a; font-size: .8rem; margin: 4px 0 18px;}
-.brief {background: #e5f1ef; border-left: 3px solid #147d83; padding: 14px 18px; border-radius: 0 10px 10px 0; color: #254d50; margin: 12px 0 20px; font-size: .88rem;}
-.footer {border-top: 1px solid #dbe2eb; color: #64748b; font-size: .75rem; padding-top: 16px; margin-top: 28px;}
-@media(max-width: 700px) {.hero {padding: 22px;} .block-container {padding-top: 1.3rem;} [data-testid="stMetric"] {padding: 14px;}}
-</style>
-<div class="hero">
-<div class="eyebrow">FINANCIAL COMPLAINT INTELLIGENCE</div>
-<h1>The Consumer Complaint Landscape</h1>
-<p>Explore where complaints concentrate and how companies respond.</p>
-</div>
-""",
+    "<style>" + Path(__file__).with_name("styles.css").read_text() + "</style>"
+    '<div class="topbar"><span class="brand-mark" aria-hidden="true">◈</span>'
+    '<span class="brand-title">Financial Complaint Intelligence</span>'
+    '<span class="brand-subtitle">Executive dashboard</span>'
+    '<span class="snapshot-badge">Validated snapshot</span></div>',
     unsafe_allow_html=True,
 )
 
@@ -101,13 +78,13 @@ def style_chart(fig, height=340):
         height=height,
         paper_bgcolor="#ffffff",
         plot_bgcolor="#ffffff",
-        font=dict(family="Arial, sans-serif", color="#52657a", size=12),
+        font=dict(family="Arial, sans-serif", color="#526773", size=12),
         margin=dict(l=20, r=24, t=30, b=35),
-        colorway=["#147d83", "#294e73", "#63ada7", "#b99154", "#95a6b8"],
-        hoverlabel=dict(bgcolor="#10243a", font_color="white"),
+        colorway=["#087f8c", "#142b3b", "#63ada7", "#c5a46d", "#95a6b8"],
+        hoverlabel=dict(bgcolor="#142b3b", font_color="white"),
     )
     fig.update_xaxes(showgrid=False, zeroline=False)
-    fig.update_yaxes(gridcolor="#edf1f5", zeroline=False)
+    fig.update_yaxes(gridcolor="#eeece5", zeroline=False)
     return fig
 
 
@@ -117,24 +94,12 @@ if not DATA.exists():
     )
     st.stop()
 
-manifest_path = ROOT / "reports/refresh_manifest.json"
-if manifest_path.exists():
-    manifest = json.loads(manifest_path.read_text())
-    st.caption(
-        f"Rolling {manifest['retention_months']}-month publication · "
-        f"Coverage through {manifest['observed_last_date']} · "
-        f"Last validated refresh: {manifest['validated_at'][:16].replace('T', ' ')} UTC"
-    )
-else:
-    st.caption(
-        "Historical snapshot · Scheduled rolling refresh awaiting its first validated publication."
-    )
 
 bounds = query(
     "SELECT MIN(date_received) AS first, MAX(date_received) AS last FROM metrics"
 ).iloc[0]
 with st.sidebar:
-    st.markdown("### ◈ Intelligence workspace")
+    st.markdown("### Refine your view")
     st.caption("Configure the executive view")
     st.divider()
     dates = st.date_input(
@@ -175,6 +140,20 @@ with st.sidebar:
         "Empty selections include all values, including missing labels. Dates use the complaint received date; weeks start Monday."
     )
 
+with st.sidebar:
+    manifest_path = ROOT / "reports/refresh_manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+        st.caption(
+            f"Rolling {manifest['retention_months']}-month publication · "
+            f"Coverage through {manifest['observed_last_date']} · "
+            f"Last validated refresh: {manifest['validated_at'][:16].replace('T', ' ')} UTC"
+        )
+    else:
+        st.caption(
+            "Historical snapshot · Scheduled rolling refresh awaiting its first validated publication."
+        )
+
 if len(dates) != 2:
     st.warning("Select both a start and end date.")
     st.stop()
@@ -203,45 +182,61 @@ if not totals["complaints"]:
     st.warning("No complaints match these filters. Adjust the selections.")
     st.stop()
 
-st.markdown(
-    f'<div class="scope">SELECTED VIEW · {dates[0]:%d %b %Y} — {dates[1]:%d %b %Y} · {len(companies) if companies else "All"} companies · {len(products) if products else "All"} products</div>',
-    unsafe_allow_html=True,
-)
-cards = st.columns(4)
-cards[0].metric("Complaints", compact(totals["complaints"]))
-cards[1].metric("Timely response rate", rate(totals["timely"], totals["known"]))
-cards[2].metric("Narrative coverage", rate(totals["narratives"], totals["complaints"]))
-cards[3].metric("Published narratives", compact(totals["narratives"]))
-st.caption(
-    f"Timeliness denominator: {compact(totals['known'])} known records · Unknown timeliness: {compact(totals['unknown'])}. Rates are calculated after aggregation."
-)
+
+def headline_metrics():
+    """Repeat the shared selection summary within each analytical tab."""
+    st.markdown(
+        f'<div class="scope">SELECTED VIEW · {dates[0]:%d %b %Y} — {dates[1]:%d %b %Y} · {len(companies) if companies else "All"} companies · {len(products) if products else "All"} products</div>',
+        unsafe_allow_html=True,
+    )
+    cards = st.columns(4)
+    cards[0].metric("Complaints", compact(totals["complaints"]))
+    cards[1].metric("Timely response rate", rate(totals["timely"], totals["known"]))
+    cards[2].metric(
+        "Narrative coverage", rate(totals["narratives"], totals["complaints"])
+    )
+    cards[3].metric("Published narratives", compact(totals["narratives"]))
+    st.caption(
+        f"Timeliness denominator: {compact(totals['known'])} known records · Unknown timeliness: {compact(totals['unknown'])}. Rates are calculated after aggregation."
+    )
 
 
-def count_chart(frame, category, title, color="#294e73", height=400):
+def count_chart(frame, category, title, color="#142b3b", height=400):
     """Render ranked values with compact labels and full category tooltips."""
     frame = frame.copy().sort_values("complaints")
     frame["label"] = frame[category].fillna("Missing label").map(str)
     frame["short"] = frame["label"].map(lambda v: v if len(v) < 40 else v[:37] + "…")
     frame["count_label"] = frame["complaints"].map(compact)
-    fig = style_chart(
-        px.bar(
-            frame,
-            x="complaints",
-            y="short",
-            orientation="h",
-            text="count_label",
-            custom_data=["label", "count_label"],
-            labels={"short": "", "complaints": "Complaints"},
-            color_discrete_sequence=[color],
-        ),
-        height,
+    stem_x, stem_y = [], []
+    for value, label in zip(frame["complaints"], frame["short"]):
+        stem_x.extend([0, value, None])
+        stem_y.extend([label, label, None])
+    fig = style_chart(go.Figure(), height)
+    fig.add_trace(
+        go.Scatter(
+            x=stem_x,
+            y=stem_y,
+            mode="lines",
+            line=dict(color=color, width=3),
+            hoverinfo="skip",
+            showlegend=False,
+        )
     )
-    fig.update_traces(
-        texttemplate="%{text}",
-        textposition="outside",
-        cliponaxis=False,
-        hovertemplate="<b>%{customdata[0]}</b><br>Complaints: %{customdata[1]}<extra></extra>",
+    fig.add_trace(
+        go.Scatter(
+            x=frame["complaints"],
+            y=frame["short"],
+            mode="markers+text",
+            marker=dict(color=color, size=11),
+            text=frame["count_label"],
+            textposition="middle right",
+            customdata=frame[["label", "count_label"]],
+            cliponaxis=False,
+            showlegend=False,
+            hovertemplate="<b>%{customdata[0]}</b><br>Complaints: %{customdata[1]}<extra></extra>",
+        )
     )
+    fig.update_xaxes(title="Complaints")
     maximum = frame["complaints"].max()
     ticks = [maximum * i / 4 for i in range(5)]
     fig.update_xaxes(tickvals=ticks, ticktext=[compact(v) for v in ticks])
@@ -280,14 +275,14 @@ def trend_chart(frame, key):
             y="complaints",
             markers=True,
             custom_data=["count_label"],
-            color_discrete_sequence=["#147d83"],
+            color_discrete_sequence=["#087f8c"],
             labels={"period": "Received period", "complaints": "Complaints"},
         )
     )
     fig.update_traces(
         line_width=2.5,
         marker_size=5,
-        fillcolor="rgba(20,125,131,.09)",
+        fillcolor="rgba(8,127,140,.12)",
         hovertemplate="<b>%{x|%d %b %Y}</b><br>Complaints: %{customdata[0]}<extra></extra>",
     )
     maximum = frame["complaints"].max()
@@ -311,41 +306,42 @@ trend = query(
     response_tab,
     geo_tab,
     insights_tab,
-    ai_tab,
 ) = st.tabs(
     [
         "Overview",
         "Trends",
         "Companies",
         "Products & Issues",
-        "Response Outcomes",
+        "Responses",
         "Geography & Channels",
-        "Complaint Insights",
-        "AI Analyst",
+        "Narratives",
     ]
 )
 
 with overview:
+    headline_metrics()
     st.subheader("Complaint demand at a glance")
-    trend_chart(trend, "overview_trend")
-    st.caption(
-        "Received-date counts. First and last buckets may be partial. Public complaint volume is not normalized by company size or customer count."
-    )
-    left, right = st.columns(2)
-    with left:
-        count_chart(
-            rank("company_name", limit=5),
-            "category",
-            "Leading companies by volume",
-            height=290,
-        )
-    with right:
+    demand, concentration = st.columns([1.6, 1])
+    with demand:
+        st.markdown("**Complaint demand over time**")
+        trend_chart(trend, "overview_trend")
+    with concentration:
         count_chart(
             rank("product", limit=5),
             "category",
-            "Leading products by volume",
-            "#147d83",
-            290,
+            "Product concentration",
+            "#087f8c",
+            340,
+        )
+    st.caption(
+        "Received-date counts. First and last buckets may be partial. Public complaint volume is not normalized by company size or customer count."
+    )
+    with st.expander("Leading companies by volume"):
+        count_chart(
+            rank("company_name", limit=5),
+            "category",
+            "Company concentration",
+            height=290,
         )
     top5 = rank("company_name", limit=5)["complaints"].sum()
     st.caption(
@@ -353,6 +349,7 @@ with overview:
     )
 
 with trends:
+    headline_metrics()
     st.subheader("Volume and change over time")
     from datetime import timedelta
 
@@ -397,7 +394,7 @@ with trends:
             y="coverage_pct",
             markers=True,
             custom_data=["count_label", "narrative_label"],
-            color_discrete_sequence=["#b99154"],
+            color_discrete_sequence=["#c5a46d"],
             labels={
                 "period": "Received period",
                 "coverage_pct": "Narrative coverage (%)",
@@ -422,6 +419,7 @@ with trends:
         )
 
 with company_tab:
+    headline_metrics()
     st.subheader("Company concentration and recorded responses")
     count_chart(
         rank("company_name", limit=15),
@@ -457,6 +455,7 @@ with company_tab:
     )
 
 with issues_tab:
+    headline_metrics()
     st.subheader("Products, issues and sub-issues")
     product_totals = rank("product", limit=100)
     product_totals["count_label"] = product_totals["complaints"].map(compact)
@@ -468,7 +467,7 @@ with issues_tab:
         path=["category"],
         values="complaints",
         custom_data=["count_label", "share_pct"],
-        color_discrete_sequence=["#294e73", "#147d83", "#63ada7", "#b99154"],
+        color_discrete_sequence=["#142b3b", "#087f8c", "#63ada7", "#c5a46d"],
     )
     fig.update_traces(
         textinfo="label",
@@ -503,7 +502,7 @@ with issues_tab:
             rank("sub_issue", "issues", extra, extra_params),
             "category",
             "Leading sub-issues",
-            "#147d83",
+            "#087f8c",
             430,
         )
     st.caption(
@@ -511,6 +510,7 @@ with issues_tab:
     )
 
 with response_tab:
+    headline_metrics()
     st.subheader("Response timeliness and outcome mix")
     response = (
         query(
@@ -556,9 +556,9 @@ with response_tab:
             hole=0.65,
             custom_data=["count_label", "share_pct"],
             color_discrete_sequence=[
-                "#294e73",
-                "#b99154",
-                "#147d83",
+                "#142b3b",
+                "#c5a46d",
+                "#087f8c",
                 "#63ada7",
                 "#95a6b8",
                 "#d4dce5",
@@ -583,6 +583,7 @@ with response_tab:
     )
 
 with geo_tab:
+    headline_metrics()
     st.subheader("Geographic and submission-channel patterns")
     states = rank("state", "geography", limit=100)
     states["count_label"] = states["complaints"].map(compact)
@@ -597,7 +598,7 @@ with geo_tab:
         scope="usa",
         color="complaints",
         custom_data=["count_label"],
-        color_continuous_scale=["#e3efef", "#147d83", "#10243a"],
+        color_continuous_scale=["#e3efef", "#087f8c", "#142b3b"],
     )
     fig.update_traces(
         hovertemplate="<b>%{location}</b><br>Complaints: %{customdata[0]}<extra></extra>"
@@ -627,7 +628,7 @@ with geo_tab:
             rank("submission_channel", "channels"),
             "category",
             "Submission channels",
-            "#147d83",
+            "#087f8c",
             400,
         )
     with st.expander("All recorded locations"):
@@ -640,19 +641,29 @@ with geo_tab:
         )
 
 with insights_tab:
+    headline_metrics()
     render_insights(ROOT, query, where, params, dates, totals, compact, rate)
 
-with ai_tab:
-    render_ai(
-        ROOT,
-        {
-            "start_date": dates[0].isoformat(),
-            "end_date": dates[1].isoformat(),
-            "company_name": companies,
-            "product": products,
-            "sub_product": subs,
-        },
+with st.container(key="ai_launcher"):
+    chat = st.popover(
+        "Ask AI Analyst",
+        icon=":material/auto_awesome:",
+        type="primary",
+        key="ai_chat_open",
+        on_change="rerun",
     )
+    if chat.open:
+        with chat:
+            render_ai(
+                ROOT,
+                {
+                    "start_date": dates[0].isoformat(),
+                    "end_date": dates[1].isoformat(),
+                    "company_name": companies,
+                    "product": products,
+                    "sub_product": subs,
+                },
+            )
 
 st.caption(
     "K = thousand · M = million · B = billion. Display counts are rounded; CSV downloads retain exact values. Filters apply across all tabs; local issue drilldown is explicitly scoped."
