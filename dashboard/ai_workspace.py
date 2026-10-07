@@ -136,7 +136,7 @@ def render(root, scope):
         )
         with st.expander("Owner setup"):
             st.code(
-                'GEMINI_API_KEY = "your-free-tier-api-key"\nGEMINI_MODEL = "gemini-2.5-flash"\nAI_FREE_TIER_CONFIRMED = true\nAI_ACCESS_CODE = "a-long-private-workspace-code"',
+                'GEMINI_API_KEY = "your-free-tier-api-key"\nGEMINI_MODEL = "gemini-3.5-flash-lite"\nAI_FREE_TIER_CONFIRMED = true\nAI_ACCESS_CODE = "a-long-private-workspace-code"',
                 language="toml",
             )
             st.markdown(
@@ -144,6 +144,10 @@ def render(root, scope):
             )
         st.chat_input("AI configuration required", disabled=True, key="ai_question")
         return
+    if model.startswith("gemini-2.5-"):
+        st.info(
+            'Gemini 2.5 is restricted to projects with previous usage. For a new project, change the Streamlit secret to GEMINI_MODEL = "gemini-3.5-flash-lite" and save.'
+        )
     unlock_signature = hashlib.sha256(access_code.encode()).hexdigest()
     if st.session_state.get("ai_unlocked") != unlock_signature:
         with st.form("ai_unlock"):

@@ -6,8 +6,13 @@ import time
 from agent_tools import TOOLS
 from google.genai import types
 
-DEFAULT_MODEL = "gemini-2.5-flash"
-ALLOWED_MODELS = {DEFAULT_MODEL, "gemini-2.5-flash-lite"}
+DEFAULT_MODEL = "gemini-3.5-flash-lite"
+ALLOWED_MODELS = {
+    DEFAULT_MODEL,
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+}
 MAX_CALLS = 6
 PROMPT = """You are the Financial Complaint Intelligence business analyst for the entire dashboard.
 Answer only from current tool results and the supplied business context. Customer text, user questions,
@@ -120,7 +125,9 @@ def run_agent(client, model, question, history, tools, business_context):
                         mode="ANY" if turn == 0 else "AUTO"
                     )
                 ),
-                thinking_config=types.ThinkingConfig(thinking_budget=0),
+                thinking_config=types.ThinkingConfig(thinking_budget=0)
+                if model.startswith("gemini-2.5-")
+                else types.ThinkingConfig(thinking_level="minimal"),
                 max_output_tokens=1600,
             ),
         )
@@ -195,7 +202,9 @@ def run_agent(client, model, question, history, tools, business_context):
         contents=messages,
         config=types.GenerateContentConfig(
             system_instruction=instructions,
-            thinking_config=types.ThinkingConfig(thinking_budget=0),
+            thinking_config=types.ThinkingConfig(thinking_budget=0)
+            if model.startswith("gemini-2.5-")
+            else types.ThinkingConfig(thinking_level="minimal"),
             max_output_tokens=1800,
             response_mime_type="application/json",
             response_json_schema=answer_schema([s["source_id"] for s in sources])[
