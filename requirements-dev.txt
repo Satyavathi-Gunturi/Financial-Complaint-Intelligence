@@ -1,3 +1,4 @@
 -r requirements.txt
 ruff==0.14.0
 shandy-sqlfmt==0.27.0
+-r dashboard/requirements.txt

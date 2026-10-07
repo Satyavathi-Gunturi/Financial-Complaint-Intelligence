@@ -19,3 +19,5 @@ jobs:
       - run: ruff format --check scripts
       - run: sqlfmt --check dbt/models dbt/tests
       - run: python scripts/smoke_test.py
+      - run: python dashboard/check_app.py
+      - run: python scripts/test_narrative_analysis.py --app

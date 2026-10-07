@@ -7,6 +7,7 @@ import duckdb
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from complaint_insights import render as render_insights
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "dashboard_daily_company_product.parquet"
@@ -15,6 +16,7 @@ DATASETS = {
     "issues": ROOT / "dashboard_issues.parquet",
     "geography": ROOT / "dashboard_geography.parquet",
     "channels": ROOT / "dashboard_channels.parquet",
+    "narratives": ROOT / "dashboard_narratives.parquet",
 }
 st.set_page_config(
     page_title="Financial Complaint Intelligence", page_icon="◈", layout="wide"
@@ -300,15 +302,18 @@ trend = query(
     params,
 )
 
-overview, trends, company_tab, issues_tab, response_tab, geo_tab = st.tabs(
-    [
-        "Overview",
-        "Trends",
-        "Companies",
-        "Products & Issues",
-        "Response Outcomes",
-        "Geography & Channels",
-    ]
+overview, trends, company_tab, issues_tab, response_tab, geo_tab, insights_tab = (
+    st.tabs(
+        [
+            "Overview",
+            "Trends",
+            "Companies",
+            "Products & Issues",
+            "Response Outcomes",
+            "Geography & Channels",
+            "Complaint Insights",
+        ]
+    )
 )
 
 with overview:
@@ -625,12 +630,15 @@ with geo_tab:
             "text/csv",
         )
 
+with insights_tab:
+    render_insights(ROOT, query, where, params, dates, totals, compact, rate)
+
 st.caption(
     "K = thousand · M = million · B = billion. Display counts are rounded; CSV downloads retain exact values. Filters apply across all tabs; local issue drilldown is explicitly scoped."
 )
 with st.expander("Metric definitions"):
     st.markdown(
-        "**Timely response rate:** timely responses ÷ records with known timeliness. **Narrative coverage:** published narratives ÷ complaints. **Complaint share:** category volume ÷ selected complaint total. Zero denominators yield N/A. These summaries do not contain narrative text or resolution duration; the AI agent is a later project stage."
+        "**Timely response rate:** timely responses ÷ records with known timeliness. **Narrative coverage:** published narratives ÷ complaints. **Complaint share:** category volume ÷ selected complaint total. Zero denominators yield N/A. Aggregate tabs do not contain narrative text or resolution duration. Complaint Insights analyzes sampled narrative excerpts; the LLM agent remains planned."
     )
 st.markdown(
     '<div class="footer">Financial Complaint Intelligence · Source: CFPB public complaint snapshot. Raw volumes do not establish company-wide incident rates or internal root causes.</div>',

@@ -2,7 +2,7 @@
 
 > **Refresh enabled; updates may fail (2026-10-05):** CFPB HTTP 403 errors may prevent downloads. Scheduled runs remain active; failed attempts preserve the last validated snapshot. See [refresh operation](../docs/automated-refresh.md).
 
-The system prepares public CFPB complaint data for a six-tab leadership dashboard and a future evidence-backed AI agent. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
+The system prepares public CFPB complaint data for a seven-tab leadership dashboard and a future evidence-backed AI agent. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
 
 ![System architecture](../assets/diagrams/system-architecture.svg)
 
@@ -23,7 +23,7 @@ The architecture separates external source ownership, ephemeral batch compute, v
 
 | Concern | Current requirement / design | Acceptance or limitation |
 |---|---|---|
-| Business scope | Complaint trends, concentrations, response outcomes and narrative availability | Six dashboard tabs; no inferred internal root causes |
+| Business scope | Complaint trends, concentrations, response outcomes and narrative availability | Seven dashboard tabs including sampled local NLP themes; no inferred internal root causes |
 | Data lifecycle | Latest archive-labelled 36 calendar months by received date | Not yet applied to serving data; first full rolling release blocked |
 | Correctness | Complaint grain and shared additive metric definitions | dbt tests plus four-export sum reconciliation |
 | Reliability | Stage and validate before PR-based release | Last published revision survives failed processing or blocked merge |
@@ -50,7 +50,7 @@ The architecture separates external source ownership, ephemeral batch compute, v
 | GitHub Actions refresh | Daily check, manual force run, source caching and full retained-window rebuild | Implemented and enabled; HTTP 403 may block downloads |
 | DuckDB + dbt | Bronze identity, typed staging, eight silver tables, wide gold and parallel star schema | Implemented; 21 models and 126 tests pass on synthetic refresh fixtures |
 | Publication gate | Reconcile four datasets, create release branch, PR and merge commit | Implemented; merge depends on repository permissions and branch rules |
-| Streamlit Community Cloud | Serve filters, charts, comparisons and downloads | Live six-tab dashboard |
+| Streamlit Community Cloud | Serve filters, charts, comparisons and downloads | Live seven-tab dashboard |
 | Colab + Drive | Interactive work and manually saved full-data recovery checkpoints | Existing development workflow |
 | SQL agent + narrative retrieval + LLM | Compute answers and cite supporting complaint records | Planned; no deployed AI agent |
 
@@ -93,3 +93,7 @@ Repository permissions must permit bot PR creation. GITHUB_TOKEN-created PRs do 
 
 
 Current full-run blocker (2026-10-05): GitHub-hosted execution successfully discovered the archive catalogue and passed synthetic dbt validation, but its first source ZIP request returned HTTP 403. No refreshed datasets were published. Unattended full-data ingestion requires an allowed download path or execution environment; it is not yet operational. Existing dashboard datasets remain unchanged.
+
+## Implemented narrative analysis boundary
+
+Complaint Insights adds local TF–IDF/NMF theme discovery over filtered sampled excerpts, with evidence IDs, support counts and coverage limitations. A fifth serving Parquet is hash-bound to the overview snapshot and published in the same release PR. This is unsupervised NLP, distinct from the planned SQL/retrieval/LLM agent. See [detailed analysis contract](complaint-insights.md).

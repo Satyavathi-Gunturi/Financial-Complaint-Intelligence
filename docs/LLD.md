@@ -124,3 +124,9 @@ Current full-run blocker (2026-10-05): GitHub-hosted execution successfully disc
 
 ## Replay and acceptance
 A changed revision rebuilds from a fresh database; an unchanged revision skips processing unless forced. Source caching accelerates a rebuild but is not durable raw preservation. Run the synthetic model and refresh integration checks described in the reproduction guide. Accept the first real rolling release only after source downloads, retained-window build, full tests, all exports and PR merge succeed. The currently observed HTTP 403 fails that acceptance; synthetic success does not override it.
+
+## Narrative evidence and local NLP contract
+
+`dashboard_narratives.parquet` holds a unique-ID global hash sample of up to 60K public narrative excerpts, capped below 24 MiB. It contains received date, company/product/sub-product, issue/state/response context, masked excerpt, truncation flag, source narrative population count, sampling version, UTC export time and overview SHA-256. The exporter validates snapshot counts/date bounds and ID uniqueness; the dashboard rejects a mismatched hash.
+
+The seventh tab analyzes up to 3K filtered excerpts per period with TF–IDF and NMF. Themes are fitted jointly across selected/prior periods, sample shares use all analyzed excerpts as denominator, and zero-vocabulary excerpts remain unassigned. Comparison requires full prior-window coverage and minimum support. Runtime limits, evidence search, uncertainty and tests are specified in [Complaint Insights](complaint-insights.md). Refresh publishes this evidence atomically with the four aggregate grains; aggregate reconciliation remains unchanged.
