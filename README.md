@@ -33,7 +33,7 @@ The intended decisions are which complaint categories need investigation, where 
 
 **Implemented refresh code:** daily archive discovery, source hashing and cached downloads, rolling 36-month rebuilds, dbt validation and four-export reconciliation. Publication uses a release branch → PR → merge commit; first full-data rolling publication is blocked by a source-download HTTP 403.
 
-**Implemented NLP:** [Complaint Insights](docs/complaint-insights.md) discovers recurring themes in filtered public narrative excerpts using local TF–IDF + NMF, with sample counts, prior-period comparisons and supporting complaint IDs. A fifth serving Parquet holds up to 60K sampled excerpts; population-wide narrative findings are not claimed.
+**Implemented NLP:** [Complaint Insights](docs/complaint-insights.md) discovers recurring themes in filtered public narrative excerpts using local TF–IDF + NMF, with an executive briefing, source-labelled concern cards, sample counts, prior-period comparisons and supporting complaint IDs. A fifth serving Parquet holds up to 60K sampled excerpts; population-wide narrative findings are not claimed.
 
 **Planned AI work:** permanent detailed-data hosting, read-only SQL agent, semantic narrative retrieval, LLM integration and agent evaluation. There is no deployed LLM agent yet.
 
