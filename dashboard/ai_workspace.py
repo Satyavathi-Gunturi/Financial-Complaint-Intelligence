@@ -12,6 +12,7 @@ import pandas as pd
 import streamlit as st
 from agent_tools import DOCUMENTS, FILES, AgentTools
 from ai_agent import DEFAULT_MODEL, run_agent
+from provider_errors import provider_diagnostic
 
 
 def setting(name, default=""):
@@ -239,7 +240,9 @@ def render(root, scope):
         st.session_state.ai_messages = st.session_state.ai_messages[-12:]
     except ValueError as exc:
         st.warning(str(exc))
-    except Exception:
-        st.error(
-            "The Gemini service is unavailable, its free quota may be exhausted, or its configuration needs attention. No supported answer was produced. The dashboard remains available. There is no paid-provider fallback."
+    except Exception as exc:
+        diagnostic, action = provider_diagnostic(exc)
+        st.error(f"{diagnostic}: {action}")
+        st.caption(
+            "No supported answer was produced. The dashboard remains available. Provider details and credentials are not displayed; there is no paid fallback."
         )
