@@ -1,6 +1,8 @@
 """Explore the validated CFPB daily company/product complaint snapshot."""
 
+import html
 import json
+import textwrap
 from pathlib import Path
 
 import duckdb
@@ -205,7 +207,14 @@ def count_chart(frame, category, title, color="#142b3b", height=400):
     """Render ranked values with compact labels and full category tooltips."""
     frame = frame.copy().sort_values("complaints")
     frame["label"] = frame[category].fillna("Missing label").map(str)
-    frame["short"] = frame["label"].map(lambda v: v if len(v) < 40 else v[:37] + "…")
+
+    def wrap_label(value):
+        lines = textwrap.wrap(value, width=24)
+        if len(lines) > 2:
+            lines = [lines[0], lines[1][:21] + "…"]
+        return "<br>".join(html.escape(line) for line in lines)
+
+    frame["short"] = frame["label"].map(wrap_label)
     frame["count_label"] = frame["complaints"].map(compact)
     stem_x, stem_y = [], []
     for value, label in zip(frame["complaints"], frame["short"]):
@@ -236,11 +245,14 @@ def count_chart(frame, category, title, color="#142b3b", height=400):
             hovertemplate="<b>%{customdata[0]}</b><br>Complaints: %{customdata[1]}<extra></extra>",
         )
     )
-    fig.update_xaxes(title="Complaints")
+    fig.update_xaxes(title="Complaints", tickangle=0, nticks=3)
+    fig.update_yaxes(tickfont=dict(size=11), automargin=True)
     maximum = frame["complaints"].max()
-    ticks = [maximum * i / 4 for i in range(5)]
-    fig.update_xaxes(tickvals=ticks, ticktext=[compact(v) for v in ticks])
-    fig.update_layout(margin=dict(l=20, r=80, t=25, b=35))
+    ticks = [maximum * i / 2 for i in range(3)]
+    fig.update_xaxes(
+        tickvals=ticks, ticktext=[compact(v) for v in ticks], range=[0, maximum * 1.25]
+    )
+    fig.update_layout(margin=dict(l=150, r=35, t=25, b=45))
     st.markdown(f"**{title}**")
     st.plotly_chart(fig, width="stretch", key=title)
 
@@ -308,20 +320,20 @@ trend = query(
     insights_tab,
 ) = st.tabs(
     [
-        "Overview",
-        "Trends",
-        "Companies",
-        "Products & Issues",
-        "Responses",
-        "Geography & Channels",
-        "Narratives",
+        ":material/home: Overview",
+        ":material/bar_chart: Trends",
+        ":material/apartment: Companies",
+        ":material/inventory_2: Products & Issues",
+        ":material/chat_bubble: Responses",
+        ":material/location_on: Geography & Channels",
+        ":material/description: Narratives",
     ]
 )
 
 with overview:
     headline_metrics()
     st.subheader("Complaint demand at a glance")
-    demand, concentration = st.columns([1.6, 1])
+    demand, concentration = st.columns([1.5, 1], gap="medium")
     with demand:
         st.markdown("**Complaint demand over time**")
         trend_chart(trend, "overview_trend")

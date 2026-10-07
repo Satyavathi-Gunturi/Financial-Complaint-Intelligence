@@ -28,3 +28,5 @@ Complaint Insights presents an executive briefing and ranked source-issue concer
 ## Executive layout
 
 The compact navy brand bar and pill navigation sit above the selected view. Warm ivory surfaces, teal accents and ranked lollipop charts use compact K/M/B labels. AI Analyst is a bottom-right floating launcher available from every analytical tab, opening a responsive chat panel. Close, reopen or click outside to return to the dashboard; closing preserves the session conversation. Sidebar filter changes invalidate chat history on the next open. Streamlit 1.65 or newer supplies the stateful popover; no custom JavaScript or third-party chat component is required.
+
+The brand banner spans the full viewport above both filters and analytical content. Main content uses 24px desktop gutters and a 60:40 overview chart split. Ranked category labels wrap to two lines, with three horizontal count ticks and space for endpoint values. Paired charts stack on narrower tablet layouts to protect plotting width.
