@@ -244,11 +244,17 @@ def test_loop(tools):
     )
 
 
-def test_sdk_transport(tools):
+def test_sdk_transport(tools, model=DEFAULT_MODEL):
     requests = []
 
     def handle(request):
         payload = json.loads(request.content)
+        assert request.url.path.endswith(f"{model}:generateContent")
+        thinking = payload["generationConfig"]["thinkingConfig"]
+        if model.startswith("gemini-2.5-"):
+            assert thinking == {"thinking_budget": 0}
+        else:
+            assert thinking == {"thinking_level": "MINIMAL"}, thinking
         requests.append(payload)
         assert request.url.host == "generativelanguage.googleapis.com"
         if len(requests) == 1:
@@ -267,7 +273,12 @@ def test_sdk_transport(tools):
                     "args": metric_args(),
                 }
             }
+            part["thoughtSignature"] = "c2lnbmF0dXJl"
         elif len(requests) == 2:
+            assert (
+                payload["contents"][-2]["parts"][0]["thoughtSignature"]
+                == "c2lnbmF0dXJl"
+            )
             actual = payload["contents"][-1]["parts"][0]["functionResponse"]
             assert actual["response"]["result"]["rows"][0]["complaint_count"] == 30
             assert actual["id"] == "transport-call"
@@ -313,9 +324,7 @@ def test_sdk_transport(tools):
                 retry_options=types.HttpRetryOptions(attempts=1),
             ),
         ) as client:
-            result = run_agent(
-                client, DEFAULT_MODEL, "How many?", [], tools, "CFPB glossary"
-            )
+            result = run_agent(client, model, "How many?", [], tools, "CFPB glossary")
     asyncio.run(async_transport.aclose())
     assert len(requests) == 3 and result["sources"][0]["source_id"] == "S1"
     rejects(
@@ -436,6 +445,8 @@ if __name__ == "__main__":
         test_queries(tools)
         test_loop(tools)
         test_sdk_transport(tools)
+        test_sdk_transport(tools, "gemini-3.1-flash-lite")
+        test_sdk_transport(tools, "gemini-2.5-flash")
         test_evidence(tools)
     test_real_release()
     if "--app" in sys.argv:

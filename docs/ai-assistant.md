@@ -9,7 +9,7 @@ The eighth dashboard tab is an optional Gemini-powered business analyst. It answ
 
 ```toml
 GEMINI_API_KEY = "paste-your-private-free-tier-key-here"
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
 AI_FREE_TIER_CONFIRMED = true
 AI_ACCESS_CODE = "choose-a-long-private-workspace-code"
 ```
@@ -17,7 +17,7 @@ AI_ACCESS_CODE = "choose-a-long-private-workspace-code"
 3. Save, open **AI Analyst**, enter your workspace code and submit a small test question. Keep both secrets out of chat, GitHub and notebooks. For local development, use an ignored `.streamlit/secrets.toml` or equivalent environment variables.
 4. Confirm project billing remains unlinked in AI Studio. Do not enable billing or use a paid-project key if the goal is zero API spend.
 
-`AI_FREE_TIER_CONFIRMED` is an owner attestation, not an API billing check. The application cannot determine a key's actual project billing status. It supports only `gemini-2.5-flash` and `gemini-2.5-flash-lite`, has no paid-provider fallback, and stops on quota/service errors. Google can change model availability, quotas and terms. Free capacity is not an always-on SLA.
+`AI_FREE_TIER_CONFIRMED` is an owner attestation, not an API billing check. The application cannot determine a key's actual project billing status. It defaults to `gemini-3.5-flash-lite` and also supports `gemini-3.1-flash-lite`. Legacy `gemini-2.5-flash` and `gemini-2.5-flash-lite` remain selectable for projects with existing access, has no paid-provider fallback, and stops on quota/service errors. Google can change model availability, quotas and terms. Free capacity is not an always-on SLA.
 
 Official references: [pricing](https://ai.google.dev/gemini-api/docs/pricing), [billing](https://ai.google.dev/gemini-api/docs/billing), [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits), [function calling](https://ai.google.dev/gemini-api/docs/function-calling), [Python SDK](https://github.com/googleapis/python-genai).
 
@@ -68,3 +68,11 @@ No real model call is made by CI, and mocked responses do not establish live mod
 ### Service diagnostics
 
 The workspace displays a safe diagnostic instead of a generic configuration warning: `AI-KEY-BLOCKED` or `AI-KEY-INVALID` for rejected keys, `AI-PERMISSION` for access restrictions, `AI-QUOTA` for rate/quota limits, `AI-MODEL` for unavailable models, `AI-REQUEST` for request format errors, and `AI-TIMEOUT`, `AI-CONNECTION` or `AI-SERVICE` for connectivity/service failures. `AI-ELIGIBILITY` indicates an account prerequisite and `AI-INTERNAL` indicates an application/SDK failure. Share only the displayed diagnostic when requesting support. Provider payloads, exception messages and credentials are never shown. No billing upgrade or paid fallback is automatic.
+
+### Migrating a new project from Gemini 2.5
+
+Google limits Gemini 2.5 models to projects that actively used them previously. New projects should use the current Flash-Lite model. If `AI-MODEL` appears with a 2.5 configuration, replace just the model line in Streamlit secrets with `GEMINI_MODEL = "gemini-3.5-flash-lite"` and save. The explicit secret overrides the code default, so a deployment alone does not change it. Keep the key, workspace phrase and free-tier confirmation in place.
+
+Gemini 3 requests use `thinking_level="minimal"`; legacy 2.5 requests retain `thinking_budget=0`. Full model contents, including thought signatures, are preserved between tool turns. No automatic model fallback occurs.
+
+Official references: [Gemini model lifecycle](https://ai.google.dev/gemini-api/docs/deprecations), [Flash-Lite capabilities](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite), [API pricing](https://ai.google.dev/gemini-api/docs/pricing). Model access and free-tier capacity still depend on the project.
