@@ -10,6 +10,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "dashboard"))
 sys.path.insert(0, str(ROOT / "scripts"))
+from executive_briefing import issue_summary, representative_quote  # noqa: E402
 from export_narrative_sample import export_sample, file_hash  # noqa: E402
 from narrative_analysis import discover, redact, theme_summary  # noqa: E402
 
@@ -49,6 +50,26 @@ def test_model():
     )
     sparse = assigned.iloc[:15].copy()
     assert theme_summary(sparse, again_labels).change_pp.isna().all()
+
+
+def test_briefing():
+    frame = pd.DataFrame(
+        [
+            {"issue": "Incorrect information", "period": "Selected", "topic": 0},
+            {"issue": "Incorrect information", "period": "Selected", "topic": 1},
+            {"issue": None, "period": "Selected", "topic": -1},
+            {"issue": "Incorrect information", "period": "Previous", "topic": 0},
+        ]
+    )
+    _, summary = issue_summary(frame)
+    assert summary.narratives.sum() == 3
+    assert abs(summary.share_pct.sum() - 100) < 1e-8
+    assert summary.iloc[0].narratives == 2
+    assert "Issue not recorded" in summary.concern.tolist()
+    assert summary.change_pp.isna().all()
+    text = "I found incorrect details on my credit report and disputed them. Section 999 describes legal provisions for this complaint."
+    quote = representative_quote(text, "Incorrect information on your report")
+    assert quote in text and "disputed" in quote
 
 
 def test_export():
@@ -94,8 +115,8 @@ def test_app():
     assert len(app.tabs) == 7
     app.toggle(key="run_narrative_analysis").set_value(True).run()
     assert not app.exception, app.exception
-    assert app.selectbox(key="evidence_theme").options
-    assert any("Leading language theme" in item.value for item in app.markdown)
+    assert app.selectbox(key="evidence_concern").options
+    assert any("Executive briefing" in item.value for item in app.markdown)
     assert len(app.expander) >= 5
     app.text_input(key="evidence_phrase").set_value("unlikely-phrase-zzz").run()
     assert not app.exception, app.exception
@@ -105,13 +126,14 @@ def test_app():
     )
     app.sidebar.multiselect[1].set_value(["Mortgage"]).run()
     assert not app.exception, app.exception
-    assert app.selectbox(key="evidence_theme").options
+    assert app.selectbox(key="evidence_concern").options
     assert app.dataframe
 
 
 if __name__ == "__main__":
     test_model()
     test_export()
+    test_briefing()
     if "--app" in sys.argv:
         test_app()
     print(
