@@ -1,6 +1,6 @@
 # Project walkthrough: what we did and why
 
-This document records the completed development process, not a claim that the AI app is deployed. The data pipeline was executed in Colab on 2026-10-04.
+This document records the completed development process, with the optional whole-dashboard AI Analyst implemented and awaiting owner key activation/live acceptance. The data pipeline was executed in Colab on 2026-10-04.
 
 | Step | What we did | Why it was needed | Relevance to our use case |
 |---|---|---|---|
@@ -36,11 +36,11 @@ The future agent should answer daily, weekly, monthly and custom-period question
 An LLM cannot repair undefined metrics, lost records or double-counting joins. Tested data and documented business definitions give the agent reliable tools and provide ground truth for evaluating its answers.
 
 ## What is still ahead
-Resolve the automated source-download HTTP 403 and accept the first full rolling release; select permanent detailed-data storage; implement the read-only SQL tool, narrative indexing, LLM integration, wide/star benchmarks and operational monitoring. Current narrative_search_documents is a relational view, not semantic search. Checkpoints are development recovery aids, not deployment.
+Resolve the automated source-download HTTP 403 and accept the first full rolling release; activate and evaluate the free-tier Gemini chatbot; select permanent detailed-data storage; extend semantic narrative indexing, wide/star benchmarks and operational monitoring. Current narrative_search_documents is a relational view, not semantic search. Checkpoints are development recovery aids, not deployment.
 
 ## Updates through 2026-10-05
-Recovered a silver-only database backup, rebuilt gold and star successfully, reconciled 14,482,997 rows across all three layers, and saved `complaints_complete.duckdb` (5.13 GB). Exported four independently reconciled dashboard aggregates and deployed executive tabs in Streamlit, with compact K/M/B counts and consistent hover labels. Implemented a daily, source-hashed rolling 36-month rebuild and branch/PR/merge publication. Synthetic integration validation passes; the first hosted full archive download returned HTTP 403 and published no replacement data. The AI agent remains planned.
+Recovered a silver-only database backup, rebuilt gold and star successfully, reconciled 14,482,997 rows across all three layers, and saved `complaints_complete.duckdb` (5.13 GB). Exported four independently reconciled dashboard aggregates and deployed executive tabs in Streamlit, with compact K/M/B counts and consistent hover labels. Implemented a daily, source-hashed rolling 36-month rebuild and branch/PR/merge publication. Synthetic integration validation passes; the first hosted full archive download returned HTTP 403 and published no replacement data. The later whole-dashboard AI Analyst uses Gemini, business documents and constrained aggregate queries; live answers require key activation.
 
 ## Narrative analysis extension
 
-The seventh Complaint Insights tab uses a validated 60K public-excerpt sample and local TF–IDF/NMF to discover filtered themes, report sample support and show supporting complaint IDs. Counts are not extrapolated to all complaints; the conversational LLM agent remains planned. See [analysis and export contracts](complaint-insights.md).
+The seventh Complaint Insights tab uses a validated 60K public-excerpt sample and local TF–IDF/NMF to discover filtered themes, report sample support and show supporting complaint IDs. Counts are not extrapolated to all complaints; the eighth AI Analyst tab provides a separate configurable Gemini conversation over all serving datasets. See [analysis and export contracts](complaint-insights.md).

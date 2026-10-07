@@ -15,9 +15,10 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r requirements-dev.txt
-      - run: ruff check scripts
-      - run: ruff format --check scripts
+      - run: ruff check scripts dashboard
+      - run: ruff format --check scripts dashboard
       - run: sqlfmt --check dbt/models dbt/tests
       - run: python scripts/smoke_test.py
       - run: python dashboard/check_app.py
       - run: python scripts/test_narrative_analysis.py --app
+      - run: python scripts/test_ai_agent.py --app

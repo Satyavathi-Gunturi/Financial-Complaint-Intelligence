@@ -2,7 +2,7 @@
 
 > **Refresh enabled; updates may fail (2026-10-05):** CFPB HTTP 403 errors may prevent downloads. Scheduled runs remain active; failed attempts preserve the last validated snapshot. See [refresh operation](../docs/automated-refresh.md).
 
-The system prepares public CFPB complaint data for a seven-tab leadership dashboard and a future evidence-backed AI agent. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
+The system prepares public CFPB complaint data for an eight-tab leadership dashboard and an optional Gemini evidence-backed business analyst. The scheduled refresh implementation is intended to replace manual dataset uploads after its first successful full-data publication; Colab remains the interactive development and recovery environment.
 
 ![System architecture](../assets/diagrams/system-architecture.svg)
 
@@ -14,16 +14,17 @@ The system prepares public CFPB complaint data for a seven-tab leadership dashbo
 |---|---|---|
 | HLSD 01 — Platform architecture | Leadership and architects | What are the source, system boundaries, processing and consumption responsibilities? |
 | HLSD 02 — Deployment & operations | Platform engineers and operators | Where does each component execute, what persists, and what limits publication? |
+| HLSD 03 — AI Analyst | App engineers and leadership | How do business context, bounded queries, model calls and cited evidence interact? |
 
 ![Deployment and operations](../assets/diagrams/deployment-operations.svg)
 
-The architecture separates external source ownership, ephemeral batch compute, versioned releases, public dashboard serving and future AI. Technologies and relationship labels are explicit. Filled icons identify component types; dashed planned boundaries do not imply deployed capabilities. See [design guidance and review criteria](design-guidelines.md).
+The architecture separates external source ownership, ephemeral batch compute, versioned releases, public dashboard serving and a bounded Gemini AI boundary. Technologies and relationship labels are explicit. Filled icons identify component types; dashed planned boundaries do not imply deployed capabilities. See [design guidance and review criteria](design-guidelines.md).
 
 ## Requirements and nonfunctional design
 
 | Concern | Current requirement / design | Acceptance or limitation |
 |---|---|---|
-| Business scope | Complaint trends, concentrations, response outcomes and narrative availability | Seven dashboard tabs including sampled local NLP themes; no inferred internal root causes |
+| Business scope | Complaint trends, concentrations, response outcomes and narrative availability | Eight dashboard tabs including local NLP and optional Gemini chat; no inferred internal root causes |
 | Data lifecycle | Latest archive-labelled 36 calendar months by received date | Not yet applied to serving data; first full rolling release blocked |
 | Correctness | Complaint grain and shared additive metric definitions | dbt tests plus four-export sum reconciliation |
 | Reliability | Stage and validate before PR-based release | Last published revision survives failed processing or blocked merge |
@@ -50,9 +51,9 @@ The architecture separates external source ownership, ephemeral batch compute, v
 | GitHub Actions refresh | Daily check, manual force run, source caching and full retained-window rebuild | Implemented and enabled; HTTP 403 may block downloads |
 | DuckDB + dbt | Bronze identity, typed staging, eight silver tables, wide gold and parallel star schema | Implemented; 21 models and 126 tests pass on synthetic refresh fixtures |
 | Publication gate | Reconcile four datasets, create release branch, PR and merge commit | Implemented; merge depends on repository permissions and branch rules |
-| Streamlit Community Cloud | Serve filters, charts, comparisons and downloads | Live seven-tab dashboard |
+| Streamlit Community Cloud | Serve filters, charts, comparisons, downloads and AI workspace | Eight-tab dashboard; model answers require owner key activation |
 | Colab + Drive | Interactive work and manually saved full-data recovery checkpoints | Existing development workflow |
-| SQL agent + narrative retrieval + LLM | Compute answers and cite supporting complaint records | Planned; no deployed AI agent |
+| Gemini AI Analyst | Query aggregate metrics, retrieve sampled excerpts and explain business/source context | Implemented; Free Tier key and access code required; live-model acceptance pending |
 
 ## Refresh lifecycle
 
@@ -81,9 +82,9 @@ The initial dashboard still represents the historical November 2022–August 202
 
 Date, company, product and sub-product filters apply across tabs. Local issue selection affects only its drilldown charts. The files are queried separately: joining different aggregate grains would multiply complaints. Cache keys include dataset file identity. The manifest adds last validated refresh and observed coverage. Display values use K/M/B while CSVs retain exact counts.
 
-## Planned AI boundary
+## Implemented AI boundary
 
-The AI agent will combine constrained read-only SQL with filtered narrative retrieval and an LLM. Numerical answers must come from executed calculations; narrative explanations must cite supporting complaint IDs. Detailed-data hosting, model/provider, retrieval index and evaluations are not yet implemented. The aggregate dashboard files do not contain narrative text and cannot alone support that evidence layer.
+AI Analyst combines Gemini function calling, allowlisted business documents, application-generated read-only aggregate SQL and sampled public evidence. Five serving files remain queried independently; cross-grain joins and arbitrary SQL are unavailable. Every query inherits global sidebar filters. Answers show source IDs, SQL/parameters and exact results. Model calls require a Free Tier project key without linked billing, owner attestation and a workspace code. Quota errors stop chat without paid fallback. Permanent full-detail hosting, semantic retrieval and recorded live-model evaluations remain future work. See [AI design and activation](ai-assistant.md).
 
 ## Operations and limitations
 
@@ -96,4 +97,11 @@ Current full-run blocker (2026-10-05): GitHub-hosted execution successfully disc
 
 ## Implemented narrative analysis boundary
 
-Complaint Insights adds local TF–IDF/NMF theme discovery over filtered sampled excerpts, with evidence IDs, support counts and coverage limitations. A fifth serving Parquet is hash-bound to the overview snapshot and published in the same release PR. This is unsupervised NLP, distinct from the planned SQL/retrieval/LLM agent. See [detailed analysis contract](complaint-insights.md).
+Complaint Insights adds local TF–IDF/NMF theme discovery over filtered sampled excerpts, with evidence IDs, support counts and coverage limitations. A fifth serving Parquet is hash-bound to the overview snapshot and published in the same release PR. This is unsupervised NLP, complementary to the separately configured whole-dashboard AI Analyst. See [detailed analysis contract](complaint-insights.md).
+
+
+## AI Analyst serving design
+
+![Whole-dashboard AI Analyst boundary](../assets/diagrams/ai-analyst.svg)
+
+[Editable AI design](../assets/diagrams/ai-analyst.drawio) · [Activation, knowledge and query contracts](ai-assistant.md).

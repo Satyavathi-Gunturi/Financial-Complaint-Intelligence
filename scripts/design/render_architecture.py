@@ -75,7 +75,7 @@ class Page:
         )
         self.text(54, 68, title, 32, "#FFFFFF", True)
         self.text(54, 113, subtitle, 16, "#D9E5F0")
-        self.text(width - 410, 30, "DESIGN BASELINE  ·  05 OCT 2026", 12, "#D9E5F0")
+        self.text(width - 410, 30, "DESIGN BASELINE  ·  07 OCT 2026", 12, "#D9E5F0")
         self.text(54, 181, scope, 14, GRAY)
 
     def cell(self, ident, x, y, w, h, value, style, parent="1"):
@@ -261,7 +261,7 @@ def bundle(stem, pages):
 p = Page(
     "system-architecture",
     "HLSD 01  /  Platform architecture",
-    "Container and data-flow view · Public archives to validated analytics · Future AI is explicitly separated",
+    "Container and data-flow view · Public archives to validated analytics · Gemini AI is a bounded optional boundary",
     "SCOPE: External source, temporary processing boundary, release repository and live consumption",
 )
 p.lane(
@@ -397,7 +397,7 @@ p.card(
     130,
     "Executive dashboard",
     "APPLICATION / STREAMLIT + DUCKDB",
-    ["Seven tabs; filtered NLP themes, CSV"],
+    ["Eight tabs; local NLP + AI Analyst"],
     "dashboard",
     TEAL,
 )
@@ -463,14 +463,14 @@ p.note(
     850,
     580,
     130,
-    "PLANNED AI  ·  DETAIL HOSTING → SQL + RETRIEVAL + LLM",
+    "OPTIONAL AI  ·  GEMINI + SQL + BUSINESS CONTEXT",
     [
-        "Persistent detailed-data service and model provider are undecided",
+        "Free Tier key + access code; activation required",
         "Aggregates + bounded narrative evidence sample",
-        "Local NLP implemented; LLM agent still planned",
+        "Business docs + constrained SQL + cited sources",
     ],
     PURPLE,
-    planned=True,
+    planned=False,
 )
 p.note(
     "blocker",
@@ -605,7 +605,7 @@ q.card(
         "dashboard/app.py",
         "Read five Parquets with DuckDB",
         "Parameterized filters and queries",
-        "Local TF-IDF/NMF; LLM planned",
+        "Local NLP + optional Gemini analyst",
     ],
     "dashboard",
 )
@@ -634,7 +634,7 @@ q.card(
     "Leadership & analysts",
     "PERSON / WEB BROWSER",
     [
-        "Seven tabs + supporting excerpts",
+        "Eight tabs + optional Gemini analyst",
         "K/M/B counts and hover labels",
         "Exact-value CSV downloads",
     ],
@@ -713,7 +713,186 @@ q.note(
     GOLD,
 )
 q.finish("Processing is batch-based; no streaming or live-backlog service")
-bundle("system-architecture", [p, q])
+a = Page(
+    "ai-analyst",
+    "HLSD 03 — Whole-dashboard AI Analyst",
+    "Gemini Free Tier orchestration · Business context + constrained SQL + cited public evidence",
+    "SCOPE  ·  Optional serving feature; activation requires owner configuration. No full warehouse endpoint.",
+)
+a.card(
+    "reader",
+    55,
+    255,
+    380,
+    180,
+    "Leadership question",
+    "USER / ACTIVE FILTERS",
+    [
+        "Date / company / product / sub-product",
+        "Jargon, trends, counts or examples",
+        "Follow-ups retain conversational intent",
+    ],
+    "person",
+    BLUE,
+)
+a.card(
+    "agent",
+    575,
+    255,
+    550,
+    180,
+    "Streamlit AI workspace",
+    "APPLICATION / MANUAL TOOL LOOP",
+    [
+        "Business glossary + current dataset scope",
+        "Six bounded tools per question; no arbitrary SQL",
+        "Answers cite sources; SQL and exact results visible",
+    ],
+    "dashboard",
+    TEAL,
+)
+a.card(
+    "gemini",
+    1270,
+    255,
+    370,
+    180,
+    "Gemini Flash",
+    "EXTERNAL / FREE TIER PROJECT",
+    [
+        "Bounded context and query results",
+        "Model selects tools and arguments",
+        "Quota failure stops chat; no fallback",
+    ],
+    "cloud",
+    PURPLE,
+)
+a.card(
+    "guard",
+    615,
+    505,
+    470,
+    155,
+    "Tool contracts and limits",
+    "APPLICATION / ALLOWLIST + PARAMETERS",
+    [
+        "Global filters cannot be silently expanded",
+        "No writes, joins, code or arbitrary files",
+        "History resets on filter / release changes",
+    ],
+    "shield",
+    TEAL,
+)
+a.card(
+    "knowledge",
+    55,
+    755,
+    460,
+    195,
+    "Business knowledge",
+    "VERSIONED / REPOSITORY DOCUMENTS",
+    [
+        "Glossary + metric definitions + CFPB sources",
+        "Refresh and narrative limitations",
+        "Document results include source links",
+        "Read fixed documents from current checkout",
+    ],
+    "files",
+    BLUE,
+)
+a.card(
+    "sql",
+    615,
+    755,
+    470,
+    195,
+    "Read-only aggregate queries",
+    "DUCKDB / ONE SERVING GRAIN",
+    [
+        "Overview, issue, state or channel Parquet",
+        "SUM(flags); divide summed rate components",
+        "Parameterized labels and narrow date bounds",
+        "256 MB / 15 seconds / 50 result rows",
+    ],
+    "database",
+    GOLD,
+)
+a.card(
+    "evidence",
+    1180,
+    755,
+    460,
+    195,
+    "Public complaint evidence",
+    "PARQUET / SAMPLED NARRATIVES",
+    [
+        "Literal phrase + optional recorded issue",
+        "Up to eight excerpts + complaint IDs",
+        "Overview hash must match the evidence",
+        "Up to 60K sample; no extrapolation",
+    ],
+    "search",
+    PURPLE,
+)
+a.edge("aq", "reader", "agent", [(435, 340), (575, 340)], "Question", 468, 312)
+a.edge(
+    "am", "agent", "gemini", [(1125, 325), (1270, 325)], "Context / results", 1128, 290
+)
+a.edge(
+    "ar",
+    "gemini",
+    "agent",
+    [(1450, 435), (1450, 470), (1135, 470), (1135, 405), (1125, 405)],
+    "Tool selection / answer",
+    1180,
+    444,
+    True,
+    PURPLE,
+)
+a.edge(
+    "ag",
+    "agent",
+    "guard",
+    [(850, 435), (850, 505)],
+    "Validate arguments",
+    868,
+    465,
+    True,
+)
+a.edge(
+    "ak",
+    "guard",
+    "knowledge",
+    [(680, 660), (680, 700), (285, 700), (285, 755)],
+    "Read definitions",
+    340,
+    670,
+)
+a.edge("as", "guard", "sql", [(850, 660), (850, 755)], "Execute SELECT", 868, 690)
+a.edge(
+    "ae",
+    "guard",
+    "evidence",
+    [(1020, 660), (1020, 700), (1410, 700), (1410, 755)],
+    "Retrieve examples",
+    1120,
+    670,
+)
+a.note(
+    "config",
+    55,
+    985,
+    1585,
+    75,
+    "ACTIVATION / ACCEPTANCE",
+    [
+        "Free-project key + access code + owner billing attestation. Offline tests pass; live model quality must be checked after activation."
+    ],
+    TEAL,
+)
+a.finish("Provider calls occur only after configured, unlocked user submission")
+bundle("ai-analyst", [a])
+bundle("system-architecture", [p, q, a])
 
 # LLD: actual implementation contracts, model grain and fail-closed publication.
 model_page = Page(
@@ -1214,7 +1393,7 @@ s.note(
     [
         "Files: dashboard_daily_company_product.parquet · dashboard_issues.parquet · dashboard_geography.parquet · dashboard_channels.parquet",
         "One staged revision → one release commit with reports/refresh_manifest.json. No partially validated release is promoted.",
-        "This is an analytics interface, not a complaint-text retrieval API. Future AI requires a persistent detailed-data service.",
+        "AI queries one grain at a time; a fifth Parquet supplies sampled excerpts. Full-detail hosting and vector retrieval remain future work.",
     ],
     GOLD,
 )
@@ -1428,4 +1607,4 @@ f.note(
 )
 f.finish("Source failures never imply a successful data refresh")
 bundle("low-level-contracts", [model_page, s, f])
-print("Generated 2 HLSD pages, 3 LLD pages and matching SVG previews.")
+print("Generated 3 HLSD pages, 3 LLD pages and matching SVG previews.")

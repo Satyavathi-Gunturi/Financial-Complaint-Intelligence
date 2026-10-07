@@ -9,6 +9,8 @@ CCDB_Export_*.zip
 dbt/profiles.yml
 .env
 .env.*
+.streamlit/secrets.toml
+**/.streamlit/secrets.toml
 !.env.example
 # Generated dbt and Python files
 dbt/target/

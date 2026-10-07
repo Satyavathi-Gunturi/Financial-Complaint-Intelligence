@@ -1,6 +1,6 @@
 # Complaint Insights
 
-The seventh dashboard tab analyzes customer-reported narrative excerpts using local unsupervised machine learning: TF–IDF features and non-negative matrix factorization (NMF). No paid API, model download, external text transmission or LLM key is required. A conversational SQL/retrieval/LLM agent remains planned.
+The seventh dashboard tab analyzes customer-reported narrative excerpts using local unsupervised machine learning: TF–IDF features and non-negative matrix factorization (NMF). No paid API, model download, external text transmission or LLM key is required. The separately configured eighth AI Analyst tab adds whole-dashboard Gemini conversations; [its setup and data-transmission contract](ai-assistant.md) differ from this local-only NLP tab.
 
 ## Evidence and filters
 
@@ -38,7 +38,7 @@ The rolling refresh stages the four reconciled aggregate files and the matching 
 
 ## Validation
 
-`python scripts/test_narrative_analysis.py` checks distinct synthetic topics, deterministic assignments, count/share accounting, sparse evidence, masking and checkpoint mismatch rejection. `python scripts/test_narrative_analysis.py --app` also exercises the real uploaded sample, evidence search and filtered prior-period dashboard behavior. `python dashboard/check_app.py` verifies existing headline totals, seven tabs and aggregate filters.
+`python scripts/test_narrative_analysis.py` checks distinct synthetic topics, deterministic assignments, count/share accounting, sparse evidence, masking and checkpoint mismatch rejection. `python scripts/test_narrative_analysis.py --app` also exercises the real uploaded sample, evidence search and filtered prior-period dashboard behavior. `python dashboard/check_app.py` verifies existing headline totals, eight tabs and aggregate filters.
 
 Method reference: [scikit-learn topic extraction with TF–IDF and NMF](https://scikit-learn.org/1.8/auto_examples/applications/plot_topics_extraction_with_nmf_lda.html).
 
