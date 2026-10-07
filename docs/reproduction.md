@@ -51,3 +51,14 @@ The repository notebook is an output-cleared copy of the [current interactive no
 
 ## Scheduled rebuild validation
 Install `requirements-refresh.txt`, then run `python scripts/test_refresh_pipeline.py` for the synthetic source-to-export integration check. See the refresh guide for catalogue discovery and staged rebuild commands. Code and data publication follow branch → PR → merge commit.
+
+## Run the current dashboard and AI Analyst
+
+Use Python 3.12 and the committed serving files; a full DuckDB checkpoint is unnecessary for dashboard exploration. From the repository root:
+
+```bash
+pip install -r dashboard/requirements.txt
+streamlit run dashboard/app.py
+```
+
+The seven analytical tabs and local narrative NLP work without a model key. For a new deployment, configure the private Gemini Free Tier key, current model, owner free-tier attestation and workspace code as described in [AI setup](ai-assistant.md). The owner's deployed assistant is already activated; credentials are not distributed with this repository. See [dashboard operation](../dashboard/README.md) for layout, filter and serving contracts.

@@ -1,6 +1,6 @@
 # Coding and documentation conventions
 
-Use Python 3.10 or newer. Python follows PEP 8 with Ruff formatting, sorted imports, 88-character target lines and descriptive module/function docstrings. SQL/Jinja follows sqlfmt's consistent layout and lowercase keywords. Long literals may exceed the target line length. YAML uses two-space indentation.
+Use Python 3.12, matching CI and the Streamlit deployment. Python follows PEP 8 with Ruff formatting, sorted imports, 88-character target lines and descriptive module/function docstrings. SQL/Jinja follows sqlfmt's consistent layout and lowercase keywords. Long literals may exceed the target line length. YAML uses two-space indentation.
 
 ## Comments and model documentation
 Every model begins with its grain and purpose. Explain non-obvious decisions: preserving NULLs, stable JSON keys, date roles, missing-value denominators and tag multiplicity. Avoid comments that merely repeat SQL syntax. Schema YAML documents models and tested columns; metric meanings are in docs/metric-definitions.md.
@@ -10,10 +10,13 @@ Keep metric inputs additive. Calculate rates after aggregation. Do not introduce
 ## Checks before committing
 ```bash
 pip install -r requirements-dev.txt
-ruff check scripts
-ruff format --check scripts
+ruff check scripts dashboard
+ruff format --check scripts dashboard
 sqlfmt --check dbt/models dbt/tests
 python scripts/smoke_test.py
+python dashboard/check_app.py
+python scripts/test_narrative_analysis.py --app
+python scripts/test_ai_agent.py --app
 ```
 
 The notebook is a documented historical Colab workflow. The extracted dbt files are the maintained SQL implementation; notebook generators can regenerate the original, less-formatted SQL. Keep outputs and widget metadata cleared before publishing. Never publish private runtime profiles, credentials or large data.
