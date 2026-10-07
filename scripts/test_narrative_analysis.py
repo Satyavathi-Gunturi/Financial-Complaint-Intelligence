@@ -112,7 +112,7 @@ def test_app():
 
     app = AppTest.from_file(str(ROOT / "dashboard/app.py"), default_timeout=120).run()
     assert not app.exception, app.exception
-    assert len(app.tabs) == 8
+    assert len(app.tabs) == 7
     app.toggle(key="run_narrative_analysis").set_value(True).run()
     assert not app.exception, app.exception
     assert app.selectbox(key="evidence_concern").options

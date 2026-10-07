@@ -88,22 +88,24 @@ def show_answer(item):
         )
 
 
+def close_chat():
+    st.session_state.ai_chat_open = False
+
+
 def render(root, scope):
-    st.subheader("Ask Financial Complaint Intelligence")
-    st.caption("An evidence-backed business analyst across the entire dashboard.")
-    cards = st.columns(3)
-    for column, title, text in zip(
-        cards,
-        ["Explore the data", "Understand the business", "Trace every answer"],
-        [
-            "Ask about demand, companies, issues, outcomes, locations and channels.",
-            "Explain reporting terms, metric denominators and CFPB source context.",
-            "Review the executed SQL, exact values, documents and complaint IDs.",
-        ],
-    ):
-        with column, st.container(border=True):
-            st.markdown(f"**{title}**")
-            st.caption(text)
+    heading, close = st.columns([5, 1])
+    with heading:
+        st.markdown(
+            '<div class="ai-panel-title">✦ AI Analyst</div>'
+            '<div class="ai-panel-subtitle">Ask about your dashboard</div>',
+            unsafe_allow_html=True,
+        )
+    with close:
+        st.button("Close", icon=":material/close:", key="ai_close", on_click=close_chat)
+    st.markdown(
+        '<span class="ai-scope-badge">Uses your current filters</span>',
+        unsafe_allow_html=True,
+    )
     st.caption(
         f"Scope: {scope['start_date']}–{scope['end_date']} · Sidebar company/product/sub-product filters apply. Local chart drilldowns do not apply."
     )
@@ -173,7 +175,9 @@ def render(root, scope):
         "How has complaint volume changed by month?",
         "What does monetary relief mean, and where does this data come from?",
     ]
-    with st.expander("Questions you can ask"):
+    if not st.session_state.ai_messages:
+        st.markdown("**What would you like to explore?**")
+    with st.expander("Suggested questions", expanded=not st.session_state.ai_messages):
         for index, example in enumerate(examples):
             if st.button(example, key=f"ai_example_{index}"):
                 st.session_state.ai_pending = example

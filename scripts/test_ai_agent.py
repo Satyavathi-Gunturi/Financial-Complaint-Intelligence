@@ -359,6 +359,17 @@ def test_real_release():
         )
 
 
+def run_with_chat(app):
+    # AppTest 1.65 does not serialize popover state; send the same bool as the browser.
+    from streamlit.proto.WidgetStates_pb2 import WidgetState
+
+    state = app._tree.get_widget_states()
+    state.widgets.append(
+        WidgetState(id=app.get("popover")[0].proto.popover.id, bool_value=True)
+    )
+    return app._run(state)
+
+
 def test_app():
     from streamlit.testing.v1 import AppTest
 
@@ -370,7 +381,9 @@ def test_app():
             str(ROOT / "dashboard/app.py"), default_timeout=120
         ).run()
         assert not app.exception, app.exception
-        assert len(app.tabs) == 8 and app.tabs[-1].label == "AI Analyst"
+        assert len(app.tabs) == 7 and all(tab.label != "AI Analyst" for tab in app.tabs)
+        assert not app.chat_input
+        run_with_chat(app)
         assert app.chat_input(key="ai_question").disabled
         assert any("ready for activation" in item.value for item in app.info)
     with patch.dict(
@@ -385,15 +398,18 @@ def test_app():
             str(ROOT / "dashboard/app.py"), default_timeout=120
         ).run()
         assert not app.exception, app.exception
+        run_with_chat(app)
         app.text_input(key="ai_access_entry").set_value("wrong")
         next(
             button for button in app.button if button.label == "Open AI workspace"
-        ).click().run()
+        ).click()
+        run_with_chat(app)
         assert app.error
         app.text_input(key="ai_access_entry").set_value("test-workspace-✓")
         next(
             button for button in app.button if button.label == "Open AI workspace"
-        ).click().run()
+        ).click()
+        run_with_chat(app)
         assert not app.exception, app.exception
         assert not app.chat_input(key="ai_question").disabled
         with duckdb.connect() as con:
@@ -404,7 +420,8 @@ def test_app():
         with patch("google.genai.Client", return_value=FakeGemini(expected=total)):
             app.chat_input(key="ai_question").set_value(
                 "How many complaints are in this selection?"
-            ).run()
+            )
+            run_with_chat(app)
         assert not app.exception, app.exception
         assert (
             app.session_state["ai_messages"][-1]["result"]["sources"][0]["result"][
@@ -412,8 +429,16 @@ def test_app():
             ][0]["complaint_count"]
             == total
         )
+        app.button(key="ai_close").click()
+        run_with_chat(app)
+        assert not app.session_state["ai_chat_open"]
+        assert not app.chat_input
+        assert app.session_state["ai_messages"]
+        run_with_chat(app)
+        assert app.session_state["ai_messages"]
         app.session_state["ai_messages"] = [{"role": "user", "content": "old filters"}]
-        app.sidebar.multiselect[1].set_value(["Mortgage"]).run()
+        app.sidebar.multiselect[1].set_value(["Mortgage"])
+        run_with_chat(app)
         assert not app.exception, app.exception
         assert not app.session_state["ai_messages"]
 

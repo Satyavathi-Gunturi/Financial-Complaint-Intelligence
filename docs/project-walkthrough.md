@@ -1,6 +1,6 @@
 # Project walkthrough: what we did and why
 
-This document records the completed development process, with the optional whole-dashboard AI Analyst implemented and awaiting owner key activation/live acceptance. The data pipeline was executed in Colab on 2026-10-04.
+This document records the completed development process, with the optional whole-dashboard AI Analyst activated by the owner on 2026-10-07; recorded live-quality acceptance remains pending. The data pipeline was executed in Colab on 2026-10-04.
 
 | Step | What we did | Why it was needed | Relevance to our use case |
 |---|---|---|---|
@@ -43,4 +43,4 @@ Recovered a silver-only database backup, rebuilt gold and star successfully, rec
 
 ## Narrative analysis extension
 
-The seventh Complaint Insights tab uses a validated 60K public-excerpt sample and local TF–IDF/NMF to discover filtered themes, report sample support and show supporting complaint IDs. Counts are not extrapolated to all complaints; the eighth AI Analyst tab provides a separate configurable Gemini conversation over all serving datasets. See [analysis and export contracts](complaint-insights.md).
+The seventh Narratives tab uses a validated 60K public-excerpt sample and local TF–IDF/NMF to discover filtered themes, report sample support and show supporting complaint IDs. Counts are not extrapolated to all complaints; the floating AI Analyst chat panel provides a separate configurable Gemini conversation over all serving datasets. See [analysis and export contracts](complaint-insights.md).

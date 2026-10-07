@@ -397,7 +397,7 @@ p.card(
     130,
     "Executive dashboard",
     "APPLICATION / STREAMLIT + DUCKDB",
-    ["Eight tabs; local NLP + AI Analyst"],
+    ["Seven tabs; floating AI chat"],
     "dashboard",
     TEAL,
 )
@@ -634,7 +634,7 @@ q.card(
     "Leadership & analysts",
     "PERSON / WEB BROWSER",
     [
-        "Eight tabs + optional Gemini analyst",
+        "Seven tabs + floating AI chat",
         "K/M/B counts and hover labels",
         "Exact-value CSV downloads",
     ],
