@@ -373,7 +373,7 @@ p.card(
     145,
     "Serving data product",
     "FILES / PARQUET + JSON",
-    ["Four independent aggregate grains", "One revision + validation manifest"],
+    ["Four aggregate grains + 60K excerpts", "One revision + validation manifest"],
     "files",
     GOLD,
 )
@@ -397,7 +397,7 @@ p.card(
     130,
     "Executive dashboard",
     "APPLICATION / STREAMLIT + DUCKDB",
-    ["Six tabs; filters, comparisons, CSV"],
+    ["Seven tabs; filtered NLP themes, CSV"],
     "dashboard",
     TEAL,
 )
@@ -466,8 +466,8 @@ p.note(
     "PLANNED AI  ·  DETAIL HOSTING → SQL + RETRIEVAL + LLM",
     [
         "Persistent detailed-data service and model provider are undecided",
-        "Aggregate Parquet contains metrics, not narrative text",
-        "No deployed AI agent or semantic narrative index",
+        "Aggregates + bounded narrative evidence sample",
+        "Local NLP implemented; LLM agent still planned",
     ],
     PURPLE,
     planned=True,
@@ -585,7 +585,7 @@ q.card(
     "Main release revision",
     "FILES / GITHUB REPOSITORY",
     [
-        "Four aggregate Parquet files",
+        "Four aggregates + narrative sample",
         "reports/refresh_manifest.json",
         "Merge commit retains release history",
         "Large databases are not committed",
@@ -603,9 +603,9 @@ q.card(
     "APPLICATION / PYTHON",
     [
         "dashboard/app.py",
-        "Read aggregate files with DuckDB",
+        "Read five Parquets with DuckDB",
         "Parameterized filters and queries",
-        "No narrative text / LLM integration",
+        "Local TF-IDF/NMF; LLM planned",
     ],
     "dashboard",
 )
@@ -634,7 +634,7 @@ q.card(
     "Leadership & analysts",
     "PERSON / WEB BROWSER",
     [
-        "Six-tab exploration",
+        "Seven tabs + supporting excerpts",
         "K/M/B counts and hover labels",
         "Exact-value CSV downloads",
     ],
@@ -1106,7 +1106,7 @@ s.card(
     345,
     160,
     "Presentation contract",
-    "STREAMLIT / SIX TABS",
+    "STREAMLIT / SEVEN TABS",
     [
         "K / M / B on labels and hover",
         "Percentages use explicit denominators",
@@ -1278,7 +1278,7 @@ f.card(
     150,
     "Open release PR",
     "STATE / GITHUB BRANCH",
-    ["Commit four files + manifest", "No direct push to main"],
+    ["Commit five files + manifest", "No direct push to main"],
     "branch",
     BLUE,
 )

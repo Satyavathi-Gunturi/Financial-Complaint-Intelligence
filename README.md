@@ -7,7 +7,7 @@
 
 *Screenshot of the actual GitHub diagnostic report. [Investigation and evidence](docs/cfpb-access-diagnostics.md).*
 
-A CFPB complaint analytics platform with a six-tab executive dashboard, a tested rolling-refresh implementation, and a planned evidence-backed AI agent.
+A CFPB complaint analytics platform with a seven-tab executive dashboard, a tested rolling-refresh implementation, and a planned evidence-backed AI agent.
 
 ## Problem statement
 Financial-services leadership needs a reliable way to identify changing complaint patterns and investigate the customer experiences behind them. This project prepares consistent complaint metrics and narrative evidence for a dashboard and a data agent that can answer questions using SQL calculations and cited complaint records.
@@ -29,11 +29,13 @@ The intended decisions are which complaint categories need investigation, where 
 ## Implemented and planned
 **Implemented in Colab:** chunked CSV ingestion, bronze Parquet with provenance, profiling, dbt staging and silver, complaint-level wide gold with metric flags, an additional gold star schema, reconciliation tests and Drive checkpoints. The saved notebook includes successful builds; [validation results](docs/data-quality-results.md) record their observed counts.
 
-**Live dashboard:** [Streamlit analytics](dashboard/README.md) with six tabs, shared date/company/product filters, issue drilldown, response outcomes, state mapping and channel comparisons. Four independently reconciled aggregate datasets supply these views.
+**Live dashboard:** [Streamlit analytics](dashboard/README.md) with seven tabs, shared date/company/product filters, issue drilldown, response outcomes, state mapping and channel comparisons. Four independently reconciled aggregate datasets supply these views.
 
 **Implemented refresh code:** daily archive discovery, source hashing and cached downloads, rolling 36-month rebuilds, dbt validation and four-export reconciliation. Publication uses a release branch → PR → merge commit; first full-data rolling publication is blocked by a source-download HTTP 403.
 
-**Planned AI work:** permanent detailed-data hosting, read-only SQL agent, semantic narrative retrieval, LLM integration and agent evaluation. The live dashboard is analytics; there is no deployed LLM agent yet.
+**Implemented NLP:** [Complaint Insights](docs/complaint-insights.md) discovers recurring themes in filtered public narrative excerpts using local TF–IDF + NMF, with sample counts, prior-period comparisons and supporting complaint IDs. A fifth serving Parquet holds up to 60K sampled excerpts; population-wide narrative findings are not claimed.
+
+**Planned AI work:** permanent detailed-data hosting, read-only SQL agent, semantic narrative retrieval, LLM integration and agent evaluation. There is no deployed LLM agent yet.
 
 [Open the live executive dashboard](https://financial-complaint-intelligence.streamlit.app/)
 
@@ -65,18 +67,18 @@ The architecture draw.io file includes platform and deployment/operations pages;
 Downloaded from the official [CFPB Consumer Complaint Database Narratives Archive](https://www.consumerfinance.gov/foia-requests/foia-electronic-reading-room/cfpb-consumer-complaint-database-narratives-archive/). See the source document for selection rules and the distinction between source-page coverage and observed file dates.
 
 ## Repository contents
-`notebooks/` contains the saved Colab workflow without execution outputs. `dbt/` contains extracted SQL models, tests and definitions. `reports/` contains small observed result files. `scripts/` provides database bootstrap, synthetic model validation and rolling source-to-dashboard refresh. Four compact Parquet serving datasets are versioned at the repository root. Large source archives, databases and private runtime configuration are excluded.
+`notebooks/` contains the saved Colab workflow without execution outputs. `dbt/` contains extracted SQL models, tests and definitions. `reports/` contains small observed result files. `scripts/` provides database bootstrap, synthetic model validation and rolling source-to-dashboard refresh. Four aggregate Parquet serving datasets and a bounded narrative evidence sample are versioned at the repository root. Large source archives, databases and private runtime configuration are excluded.
 
 ## Dashboard tabs
 
-Overview · Trends · Companies · Products & Issues · Response Outcomes · Geography & Channels. Global filters span tabs; local issue drilldown is explicitly scoped. On-screen counts use K/M/B, and downloads keep exact values. See [dashboard operation](dashboard/README.md).
+Overview · Trends · Companies · Products & Issues · Response Outcomes · Geography & Channels · Complaint Insights. Global filters span tabs; local issue drilldown is explicitly scoped. On-screen counts use K/M/B, and downloads keep exact values. See [dashboard operation](dashboard/README.md).
 
 ## Validation
 The packaged project passed a synthetic smoke build: **21 models and 126 dbt data tests**, plus edge-case assertions. The workflow in `.github/workflows/dbt-smoke.yml` repeats this check on pushes and pull requests. Full-data results remain separately documented.
 
 ## Automated refresh
 
-The [scheduled refresh pipeline](docs/automated-refresh.md) checks public CFPB archives daily and stages a validated rolling 36-month release on source or transformation changes. It rebuilds all dbt layers and publishes the four dashboard exports together through a release branch, PR and merge commit. First full-data runner publication must pass before the historical dashboard snapshot is replaced. The window is anchored to the latest archive-labelled month, not the wall clock. The live Colab notebook remains the interactive development workflow.
+The [scheduled refresh pipeline](docs/automated-refresh.md) checks public CFPB archives daily and stages a validated rolling 36-month release on source or transformation changes. It rebuilds all dbt layers and publishes four aggregate exports and their narrative evidence sample together through a release branch, PR and merge commit. First full-data runner publication must pass before the historical dashboard snapshot is replaced. The window is anchored to the latest archive-labelled month, not the wall clock. The live Colab notebook remains the interactive development workflow.
 
 ## Get started
 Use [the reproduction guide](docs/reproduction.md) to run entirely in Colab or run the extracted dbt project against existing bronze Parquet. Versions observed in the successful Colab environment are pinned in `requirements.txt`.

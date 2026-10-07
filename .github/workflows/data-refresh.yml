@@ -14,6 +14,8 @@ on:
       - '.github/workflows/data-refresh.yml'
       - 'scripts/refresh_pipeline.py'
       - 'scripts/test_refresh_pipeline.py'
+      - 'scripts/export_narrative_sample.py'
+      - 'dashboard/narrative_analysis.py'
       - 'requirements-refresh.txt'
       - 'dbt/**'
 permissions:
@@ -66,15 +68,15 @@ jobs:
           cp data/release/refresh_manifest.json reports/refresh_manifest.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f dashboard_daily_company_product.parquet dashboard_issues.parquet dashboard_geography.parquet dashboard_channels.parquet
+          git add -f dashboard_daily_company_product.parquet dashboard_issues.parquet dashboard_geography.parquet dashboard_channels.parquet dashboard_narratives.parquet
           git add reports/refresh_manifest.json
           git checkout -b "automated/data-refresh-${GITHUB_RUN_ID}"
           git commit -m 'Refresh validated rolling 36-month complaint datasets'
           git push origin HEAD
           cat > /tmp/refresh-pr.md <<'BODY'
-          Update the dashboard's rolling 36-month complaint window from the latest official CFPB archives. All four exports are published together with their source hashes and validation metadata.
+          Update the dashboard's rolling 36-month complaint window from the latest official CFPB archives. All four aggregate exports and the matching sampled narrative evidence are published together with their source hashes and validation metadata.
 
-          Validation: synthetic retention and revised-record tests; full dbt build and 126 data tests; all additive metric totals reconciled across four exports. Failure before merge leaves the current dashboard datasets in place.
+          Validation: synthetic retention and revised-record tests; full dbt build and 126 data tests; all additive metric totals reconciled across four aggregates; narrative evidence snapshot and unique IDs verified. Failure before merge leaves the current dashboard datasets in place.
 
           This PR was created by GITHUB_TOKEN; GitHub does not trigger additional PR workflows for token-generated events. Validation above ran in the scheduled refresh job. Required branch checks are respected and may leave this PR pending.
           BODY

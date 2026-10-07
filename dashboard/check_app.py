@@ -31,7 +31,7 @@ app = AppTest.from_file(
     str(Path(__file__).with_name("app.py")), default_timeout=60
 ).run()
 assert not app.exception, app.exception
-assert len(app.tabs) == 6
+assert len(app.tabs) == 7
 assert app.metric[0].value == compact(total)
 assert app.metric[3].value == compact(narratives)
 assert app.metric[1].value == (f"{100 * timely / known:.2f}%" if known else "N/A")
@@ -42,4 +42,4 @@ if mortgage:
     assert app.metric[0].value == compact(mortgage)
 app.sidebar.selectbox[0].set_value("Week").run()
 assert not app.exception, app.exception
-print("Snapshot totals, six tabs, product filters and weekly trends passed.")
+print("Snapshot totals, seven tabs, product filters and weekly trends passed.")

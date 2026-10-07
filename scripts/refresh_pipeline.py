@@ -381,6 +381,8 @@ def main():
     for path in sorted((ROOT / "dbt").rglob("*")) + [
         Path(__file__),
         ROOT / "requirements-refresh.txt",
+        ROOT / "scripts/export_narrative_sample.py",
+        ROOT / "dashboard/narrative_analysis.py",
     ]:
         if (
             path.is_file()
@@ -405,6 +407,16 @@ def main():
     ingest(sources, cache, work / "bronze", start, end)
     database, duplicates = build_database(work, start, end)
     metadata = export_datasets(database, output, start, end)
+    from export_narrative_sample import export_sample
+
+    evidence = export_sample(
+        database,
+        output / "dashboard_daily_company_product.parquet",
+        output / "dashboard_narratives.parquet",
+    )
+    metadata["exports"][evidence.name] = dict(
+        sha256=digest(evidence), bytes=evidence.stat().st_size
+    )
     metadata.update(
         revision=fingerprint,
         sources=records,
